@@ -207,11 +207,14 @@
 
   // ---- 调用 OpenAI 兼容接口（带一次瞬时失败重试） ----
   function doFetch(url, body, headers) {
-    return fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(body)
-    }).then(function (resp) {
+    // 加 25 秒超时：避免网络悬挂导致 Promise 永不返回（现象：一直转圈、不报错、调试面板 0 次调用）
+    var _ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var _timer = null;
+    if (_ctrl) { _timer = setTimeout(function () { try { _ctrl.abort(); } catch (e) {} }, 25000); }
+    var _opts = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+    if (_ctrl) _opts.signal = _ctrl.signal;
+    return fetch(url, _opts).then(function (resp) {
+      if (_timer) clearTimeout(_timer);
       if (!resp.ok) {
         var err = { status: resp.status };
         return resp.json().catch(function () { return {}; }).then(function (j) {
@@ -220,6 +223,9 @@
         });
       }
       return resp.json();
+    }, function (e) {
+      if (_timer) clearTimeout(_timer);
+      throw e;
     });
   }
 
@@ -240,10 +246,18 @@
         return;
       }
 
-      var url = String(preset.url || '').replace(/\/+$/, '');
-      if (!/\/chat\/completions$/.test(url)) {
-        url = url + '/chat/completions';
+      var _rawUrl = String(preset.url || '').trim();
+      try { console.log('[llmService] 原始地址:', _rawUrl); } catch (e0) {}
+      // 归一化：无论填裸域名 / 带 /v1 / 带完整路径，都统一成 .../v1/chat/completions
+      var _base = _rawUrl.replace(/\/+$/, '');
+      var _changed = true;
+      while (_changed) {
+        _changed = false;
+        if (/\/chat\/completions$/.test(_base)) { _base = _base.replace(/\/chat\/completions$/, ''); _changed = true; }
+        if (/\/v1$/.test(_base)) { _base = _base.replace(/\/v1$/, ''); _changed = true; }
       }
+      var url = _base + '/v1/chat/completions';
+      try { console.log('[llmService] 实际请求地址:', url); } catch (e1) {}
 
       // 记忆：优先用原始 history 做压缩，否则退回 messages 数组
       var memorySummary = null;

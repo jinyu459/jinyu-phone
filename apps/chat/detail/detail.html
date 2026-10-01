@@ -1487,7 +1487,12 @@ function sendMessage() {
             }
 
             if (!ok) {
-                replyText = '收到你的消息了，这是模拟回复。';
+                var _why = '未产生模型调用(未选中预设/llmService未加载)';
+                try {
+                    if (!window.llmService) { _why = 'llmService脚本未加载'; }
+                    else if (typeof result !== 'undefined' && result && result.error) { _why = result.error + (result.status ? '(HTTP ' + result.status + ')' : ''); }
+                } catch (e2) {}
+                replyText = '收到你的消息了，这是模拟回复。[' + _why + ']';
             }
 
             var aiMsg = {
