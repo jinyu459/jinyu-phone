@@ -18,9 +18,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 安装 Node
+        # Capacitor 8 的 CLI 强制要求 Node >= 22；
+        # 若装 Node 20，会在此后的 "同步 Capacitor" 步骤直接报 [fatal] 并 exit 1
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: 安装 Java 21
         # Capacitor 7/8 需要 JDK 21；若构建报 Java 版本错误，可改成 17 再试
