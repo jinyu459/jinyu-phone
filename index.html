@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <script>
+    // 门卫：没验证过的直接踢回验证页
+    if (localStorage.getItem('jy_is_verified') !== 'true') {
+        window.location.href = 'auth.html';
+    }
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锦玉</title>
+    <!-- 引入外部 CSS -->
+     <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+    <div class="phone-container">
+        <!-- 1. 上半部分：主屏幕区域 -->
+        <div class="screen-area" id="screen-area">
+            <div class="desktop" id="desktop">
+                <!-- 左屏幕 -->
+                <div class="home-screen left-screen">
+<div id="winSys" class="widget-window">
+    <div class="window-frame top-frame">
+    <span class="spring-bud bud-1"></span>
+    <span class="spring-bud bud-2"></span>
+    <span class="spring-bud bud-3"></span>
+</div>
+    <div class="window-frame bottom-frame"></div>
+    <div class="window-frame left-frame"></div>
+    <div class="window-frame right-frame"></div>
+    <div class="frost-edge frost-edge-top"></div>
+    <div class="frost-edge frost-edge-left"></div>
+    <div class="frost-edge frost-edge-bottom"></div>
+    <div class="frost-edge frost-edge-right"></div>
+    <div class="page" id="page"></div>
+    <!-- 春：流苏 -->
+    <div class="trigger-box trigger-spring" onclick="document.getElementById('winSys').classList.toggle('open')">
+        <div class="tassel-thread"></div><div class="tassel-jade"></div><div class="tassel-tail"></div>
+    </div>
+    <!-- 夏：绳结 -->
+    <div class="trigger-box trigger-summer" onclick="document.getElementById('winSys').classList.toggle('open')">
+        <div class="rope-line"></div><div class="rope-knot"></div><div class="rope-tail"></div>
+    </div>
+    <!-- 秋：松果 -->
+    <div class="trigger-box trigger-autumn" onclick="document.getElementById('winSys').classList.toggle('open')">
+        <div class="pinecone-stem"></div><div class="pinecone-body"></div>
+    </div>
+    <!-- 冬：雪兔 -->
+    <div class="trigger-box trigger-winter" onclick="document.getElementById('winSys').classList.toggle('open')">
+        <div class="snow-bunny">
+            <div class="bunny-ear-l"></div><div class="bunny-ear-r"></div>
+            <div class="bunny-body"></div><div class="bunny-eye"></div>
+            <div class="bunny-nose"></div><div class="bunny-tail"></div>
+        </div>
+    </div>
+    <div id="timeDisplay" class="time-display" onclick="sysData.toggleTimeMode()"></div>
+</div>
+
+
+                    <div class="icon-grid" id="icon-grid-left">
+                        <div class="icon" id="icon-setting" data-url="apps/setting/setting.html">
+                            <div class="icon-box">设置</div><div class="icon-name">设置</div>
+                        </div>
+                        <div class="icon" id="icon-theme" data-url="apps/theme/theme.html">
+                            <div class="icon-box">美化</div><div class="icon-name">美化</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右屏幕 -->
+                <div class="home-screen right-screen">
+                    <div class="icon-grid mt-20" id="icon-grid-right">
+                        <div class="icon" id="icon-chat" data-url="apps/chat/index.html">
+                            <div class="icon-box">聊天</div><div class="icon-name">聊天</div>
+                        </div>
+                        <div class="icon" id="icon-worldbook" data-url="apps/worldbook/worldbook.html">
+                            <div class="icon-box">世界书</div><div class="icon-name">世界书</div>
+                        </div>
+                        <div class="icon" id="icon-online" data-url="apps/online/online.html">
+                            <div class="icon-box">联机</div><div class="icon-name">联机</div>
+                        </div>
+                        <div class="icon" id="icon-music" data-url="apps/music/music.html">
+                            <div class="icon-box">音乐</div><div class="icon-name">音乐</div>
+                        </div>
+                        <div class="icon" id="icon-farm" data-url="apps/farm/farm.html">
+                            <div class="icon-box">农场</div><div class="icon-name">农场</div>
+                        </div>
+                        <div class="icon" id="icon-study" data-url="apps/study/study.html">
+                            <div class="icon-box">学习</div><div class="icon-name">学习</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="toast"></div>
+        </div> <!-- screen-area 结束 -->
+
+        <!-- 2. 下半部分：底部 Dock 栏 -->
+<div id="dock" class="dock">
+    <!-- 左侧：祥云（显隐文字） -->
+    <button class="dock-btn" onclick="sysData.toggleIconNames()">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19c2.5 0 4.5-2 4.5-4.5S20 10 17.5 10c-.3 0-.6.1-.9.1A7 7 0 0 0 4 12.5C2.3 13 1 14.6 1 16.5 1 18.4 2.6 20 4.5 20h13z"/>
+        </svg>
+    </button>
+
+    <!-- 中间诗句 -->
+    <span id="poem-text">海内存知己，天涯若比邻</span>
+
+    <!-- 右侧：新月（切屏） -->
+    <button class="dock-btn" onclick="toggleScreen()">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
+</div>
+
+
+        <!-- ================= 核心修复位置 ================= -->
+        <!-- 3. 绝对定位层：将 app-layer 移到了整个 phone-container 的最后面 -->
+        <!-- 这样它的 position: absolute 就能以整个手机为基准，彻底覆盖所有内容 -->
+        <div class="app-layer" id="app-layer">
+            <iframe id="app-frame" src=""></iframe>
+            <button class="home-btn" onclick="closeApp()">一 返回桌面 一</button>
+        </div>
+
+    </div> 
+    
+    <!-- phone-container 结束 -->
+  
+    <script src="assets/js/dataHub.js"></script>
+    <script src="assets/js/fileDB.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/drag.js"></script>
+    
+</body>
+</html>

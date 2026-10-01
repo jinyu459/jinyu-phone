@@ -1,0 +1,30 @@
+# ===== 依赖 =====
+node_modules/
+
+# ===== Capacitor 打包产物（云端/本地会自动生成，不要提交）=====
+www/
+
+# ===== Android 构建产物（android/ 本身要提交，只忽略编译输出）=====
+android/app/build/
+android/build/
+android/.gradle/
+android/app/release/
+android/local.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# ===== 系统 / 编辑器 =====
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# ===== 日志 =====
+*.log
+npm-debug.log*
+
+# ===== 本项目的一次性脚本（按需删除本行以纳入版本管理）=====
+patch_fix2.py

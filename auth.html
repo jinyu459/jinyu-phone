@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锦玉小手机 - 资格验证</title>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+body {
+    min-height: 100vh; width: 100%;
+    background: linear-gradient(180deg, #c5cdd8 0%, #b8c4d0 20%, #aab8c6 40%, #9caab8 60%, #92a4b2 100%);
+    font-family: 'STKaiti', '楷体', serif;
+    overflow: hidden; position: relative;
+}
+.rain {
+    position: fixed; inset: -20% -10% 0 -10%; z-index: 1; pointer-events: none;
+    background-image:
+        repeating-linear-gradient(168deg, transparent, transparent 50px, rgba(175,188,200,0.06) 50px, rgba(175,188,200,0.06) 51px),
+        repeating-linear-gradient(172deg, transparent, transparent 70px, rgba(168,182,195,0.04) 70px, rgba(168,182,195,0.04) 71px),
+        repeating-linear-gradient(165deg, transparent, transparent 90px, rgba(180,192,205,0.035) 90px, rgba(180,192,205,0.035) 91px);
+    animation: rainDrift 0.6s linear infinite;
+}
+@keyframes rainDrift { to { transform: translateY(51px) translateX(-8px); } }
+.mt { position: fixed; left: -5%; right: -5%; z-index: 2; pointer-events: none; }
+.mt-1 { bottom: 59%; height: 80px; background: rgba(145,158,175,0.07); border-radius: 25% 50% 35% 30% / 100% 100% 0 0; }
+.mt-2 { bottom: 56%; height: 60px; background: rgba(138,155,170,0.09); border-radius: 45% 55% 30% 45% / 100% 100% 0 0; }
+.mt-3 { bottom: 53%; height: 45px; background: rgba(130,148,165,0.1); border-radius: 50% 35% 45% 40% / 100% 100% 0 0; }
+.water {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 55%; z-index: 3;
+    background: linear-gradient(to bottom,
+        rgba(118,138,155,0.2) 0%, rgba(108,128,148,0.28) 25%,
+        rgba(100,120,140,0.32) 55%, rgba(90,112,132,0.38) 100%);
+}
+.water::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(0deg,
+        transparent, transparent 7px, rgba(255,255,255,0.025) 7px, rgba(255,255,255,0.025) 8px);
+    animation: waveShift 3s ease-in-out infinite alternate;
+}
+@keyframes waveShift { 0% { transform: translateX(-4px); } 100% { transform: translateX(4px); } }
+.ripple { position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.05); animation: rGrow ease-out infinite; pointer-events: none; }
+.rp1 { top: 12%; left: 18%; animation-duration: 4.5s; }
+.rp2 { top: 35%; left: 52%; animation-duration: 5.5s; animation-delay: 1.5s; }
+.rp3 { top: 58%; left: 30%; animation-duration: 5s; animation-delay: 3s; }
+.rp4 { top: 22%; left: 72%; animation-duration: 6s; animation-delay: 2.2s; }
+.rp5 { top: 48%; left: 12%; animation-duration: 5s; animation-delay: 4s; }
+.rp6 { top: 70%; left: 65%; animation-duration: 4.5s; animation-delay: 1s; }
+@keyframes rGrow { 0% { width: 0; height: 0; opacity: 0.35; } 100% { width: 55px; height: 20px; opacity: 0; transform: translate(-27px,-10px); } }
+.mist { position: fixed; left: -10%; right: -10%; z-index: 4; pointer-events: none; }
+.mist-1 { bottom: 48%; height: 16vh; background: radial-gradient(ellipse 80% 100% at 25% 60%, rgba(185,195,210,0.18) 0%, transparent 70%), radial-gradient(ellipse 60% 80% at 75% 40%, rgba(180,192,208,0.12) 0%, transparent 65%); animation: f1 18s ease-in-out infinite alternate; }
+.mist-2 { bottom: 51%; height: 12vh; background: radial-gradient(ellipse 90% 70% at 60% 50%, rgba(188,198,212,0.15) 0%, transparent 65%); animation: f2 22s ease-in-out infinite alternate; }
+.mist-3 { bottom: 45%; height: 10vh; background: radial-gradient(ellipse 70% 60% at 40% 60%, rgba(182,194,208,0.1) 0%, transparent 60%); animation: f3 15s ease-in-out infinite alternate; }
+@keyframes f1 { 0% { transform: translateX(-20px); } 100% { transform: translateX(20px); } }
+@keyframes f2 { 0% { transform: translateX(25px); } 100% { transform: translateX(-18px); } }
+@keyframes f3 { 0% { transform: translateX(-12px); } 100% { transform: translateX(25px); } }
+.scene {
+    position: fixed;
+    bottom: 42%; left: 50%; transform: translateX(-50%);
+    width: 320px; height: 130px; z-index: 6;
+}
+.boat-wrap {
+    position: absolute; left: 25px; bottom: 15px;
+    transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1), opacity 2.5s ease 0.8s;
+}
+.boat-float { animation: bFloat 3.5s ease-in-out infinite; }
+@keyframes bFloat {
+    0%,100% { transform: translateY(0) rotate(-0.5deg); }
+    50% { transform: translateY(3px) rotate(0.5deg); }
+}
+.b-hull {
+    width: 85px; height: 13px;
+    background: linear-gradient(to bottom, #5a4a3a, #4a3a28);
+    border-radius: 3px 3px 45% 50% / 3px 3px 65% 70%;
+    position: relative;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+.b-hull::before { content: ''; position: absolute; top: -2px; left: 5px; right: 15px; height: 2px; background: #6a5a48; border-radius: 1px; }
+.b-hull::after { content: ''; position: absolute; bottom: 2px; left: 18%; right: 18%; height: 1px; background: rgba(0,0,0,0.05); }
+.b-mast { position: absolute; top: -35px; left: 30px; width: 2px; height: 35px; background: linear-gradient(to bottom, #7a6a50, #5a4a38); border-radius: 1px; }
+.b-sail { position: absolute; top: -32px; left: 32px; width: 0; height: 0; border-left: 20px solid rgba(230,225,215,0.2); border-top: 10px solid transparent; border-bottom: 18px solid transparent; }
+.b-oar { position: absolute; top: -2px; right: -15px; width: 22px; height: 2px; background: #7a6a50; border-radius: 1px; transform: rotate(20deg); }
+.b-oar::after { content: ''; position: absolute; right: -4px; top: -1px; width: 6px; height: 4px; background: rgba(100,86,60,0.5); border-radius: 1px 40% 40% 1px; }
+.post-wrap { position: absolute; right: 55px; bottom: 10px; }
+.bamboo-post {
+    width: 7px; height: 48px;
+    background: linear-gradient(90deg, #6a7a50, #8a9a68, #7a8a58, #6a7a50);
+    border-radius: 3px; position: relative;
+    box-shadow: 1px 0 2px rgba(0,0,0,0.08);
+}
+.bamboo-post::before { content: ''; position: absolute; top: 12px; left: 0; right: 0; height: 2px; background: rgba(0,0,0,0.1); box-shadow: 0 14px 0 rgba(0,0,0,0.08); }
+.grass-knot-wrap {
+    position: absolute; right: 55px; bottom: 44px; z-index: 8;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.g-knot { width: 13px; height: 8px; border: 2px solid rgba(120,115,70,0.4); border-radius: 40%; transform: rotate(-5deg); position: relative; }
+.g-tail1 { position: absolute; bottom: -5px; left: 0; width: 6px; height: 1.5px; background: rgba(120,115,70,0.3); transform: rotate(-15deg); border-radius: 1px; }
+.g-tail2 { position: absolute; bottom: -7px; left: 3px; width: 5px; height: 1.5px; background: rgba(120,115,70,0.25); transform: rotate(10deg); border-radius: 1px; }
+.rope-svg { position: absolute; left: 0; bottom: 0; z-index: 7; pointer-events: none; transition: opacity 0.8s ease; }
+.rope-svg svg { overflow: visible; }
+.grass-rope { fill: none; stroke: rgba(110,105,65,0.3); stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 5 3; }
+.lantern-wrap {
+    position: fixed;
+    bottom: calc(56% - 8px);
+    left: 50%; transform: translateX(calc(-50% + 120px));
+    z-index: 5;
+    display: flex; flex-direction: column; align-items: center;
+}
+.lantern-pole { width: 3px; height: 35px; background: linear-gradient(90deg, #5a4a38, #6a5a48, #5a4a38); border-radius: 1px; }
+.lantern-arm { width: 22px; height: 3px; background: #6a5a45; border-radius: 2px; position: relative; }
+.lantern-arm::after { content: ''; position: absolute; top: 3px; right: 2px; width: 1px; height: 6px; background: rgba(90,80,60,0.4); }
+.lantern-body {
+    width: 32px; height: 42px;
+    background: radial-gradient(ellipse at 50% 45%, rgba(230,200,150,0.35) 0%, rgba(200,160,100,0.25) 40%, rgba(180,140,80,0.2) 70%, rgba(160,120,60,0.15) 100%);
+    border-radius: 40% 40% 45% 45% / 30% 30% 50% 50%;
+    margin-top: 6px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    position: relative;
+    box-shadow: 0 0 15px rgba(230,200,150,0.12), 0 0 30px rgba(230,200,150,0.06);
+    animation: lanternGlow 4s ease-in-out infinite alternate;
+}
+@keyframes lanternGlow {
+    0% { box-shadow: 0 0 12px rgba(230,200,150,0.1), 0 0 25px rgba(230,200,150,0.05); }
+    100% { box-shadow: 0 0 18px rgba(230,200,150,0.18), 0 0 35px rgba(230,200,150,0.08); }
+}
+.lantern-body::before { content: ''; position: absolute; top: -1px; left: 6px; right: 6px; height: 3px; background: rgba(140,110,60,0.3); border-radius: 2px; }
+.lantern-body::after { content: ''; position: absolute; bottom: -1px; left: 8px; right: 8px; height: 3px; background: rgba(140,110,60,0.25); border-radius: 2px; }
+.lantern-ch { font-size: 14px; color: rgba(100,70,30,0.45); line-height: 1.5; position: relative; z-index: 1; }
+.lantern-tassel { width: 3px; height: 10px; background: rgba(180,140,80,0.2); border-radius: 1px; margin-top: 2px; }
+.input-zone {
+    position: fixed;
+    bottom: 22vh; left: 50%; transform: translateX(-50%);
+    z-index: 10;
+    width: 80%; max-width: 300px;
+    display: flex; flex-direction: column; align-items: center;
+}
+.auth-input {
+    width: 100%; padding: 13px 22px;
+    background: rgba(200,210,220,0.18);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    border-radius: 0;
+    font-size: 15px; text-align: center;
+    color: #3a3a42; letter-spacing: 3px;
+    font-family: 'STKaiti', '楷体', serif;
+    outline: none; transition: border-color 0.3s;
+}
+.auth-input::placeholder { color: rgba(80,90,105,0.2); letter-spacing: 2px; }
+.auth-input:focus { border-bottom-color: rgba(255,255,255,0.25); }
+.device-box {
+    margin: 10px 0; padding: 5px 14px;
+    background: rgba(200,210,220,0.1);
+    border: none; border-radius: 20px;
+    cursor: pointer; transition: all 0.3s;
+    -webkit-user-select: text; user-select: text;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.device-box:active { background: rgba(200,210,220,0.2); }
+.device-label {
+    font-size: 9px; color: rgba(80,90,105,0.25);
+    letter-spacing: 1px;
+}
+.device-code {
+    font-size: 13px; color: rgba(60,60,72,0.45);
+    letter-spacing: 2px; font-family: monospace;
+}
+.enter-btn {
+    margin-top: 18px; padding: 9px 28px;
+    background: rgba(200,210,220,0.12);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    font-size: 13px; color: rgba(60,60,72,0.4);
+    letter-spacing: 4px;
+    font-family: 'STKaiti', '楷体', serif;
+    cursor: pointer; transition: all 0.3s;
+}
+.enter-btn:active { transform: scale(0.96); background: rgba(200,210,220,0.25); }
+.footer-text {
+    position: fixed; bottom: 2.5vh; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: rgba(170,180,195,0.18);
+    letter-spacing: 2px; z-index: 10;
+}
+.scene.departing .grass-knot-wrap { transform: rotate(90deg) scale(0); opacity: 0; }
+.scene.departing .rope-svg { opacity: 0; }
+.scene.departing .boat-wrap { transform: translateX(-250px) translateY(-8px); opacity: 0; }
+.scene.departing .boat-float { animation: driftOut 3s ease-in-out forwards; }
+@keyframes driftOut {
+    0% { transform: translateY(0) rotate(-0.5deg); }
+    40% { transform: translateY(-3px) rotate(-2deg); }
+    100% { transform: translateY(-6px) rotate(-1deg); }
+}
+.fog-overlay {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at 50% 55%, rgba(190,200,212,0.95) 0%, rgba(180,192,208,0.92) 40%, rgba(170,184,200,0.95) 100%);
+    z-index: 1000; opacity: 0; pointer-events: none;
+    transition: opacity 2s ease;
+    display: flex; justify-content: center; align-items: center;
+}
+.fog-overlay.active { opacity: 1; pointer-events: auto; }
+.fog-overlay.clearing { animation: fogOut 1s ease-out 1s forwards; }
+@keyframes fogOut { to { opacity: 0; } }
+.fog-text { font-size: 18px; color: rgba(75,72,65,0.45); letter-spacing: 10px; opacity: 0; transition: opacity 1.2s ease 0.4s; }
+.fog-overlay.active .fog-text { opacity: 1; }
+.fog-overlay.clearing .fog-text { opacity: 0; transition: opacity 0.3s; }
+@keyframes shake {
+    0%,100% { transform: translateX(-50%); }
+    20% { transform: translateX(calc(-50% - 6px)); }
+    40% { transform: translateX(calc(-50% + 6px)); }
+    60% { transform: translateX(calc(-50% - 4px)); }
+    80% { transform: translateX(calc(-50% + 4px)); }
+}
+.input-zone.error { animation: shake 0.4s ease; }
+.toast {
+    position: fixed; top: -50px; left: 50%; transform: translateX(-50%);
+    background: rgba(210,218,228,0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 10px 24px; border-radius: 20px;
+    color: #4a4a58; font-size: 13px;
+    transition: top 0.4s, opacity 0.4s;
+    opacity: 0; z-index: 2000; letter-spacing: 1px;
+}
+.toast.show { top: 5vh; opacity: 1; }
+    </style>
+</head>
+<body>
+
+<div class="rain"></div>
+<div class="mt mt-1"></div>
+<div class="mt mt-2"></div>
+<div class="mt mt-3"></div>
+<div class="mist mist-1"></div>
+<div class="mist mist-2"></div>
+<div class="mist mist-3"></div>
+<div class="water">
+    <div class="ripple rp1"></div><div class="ripple rp2"></div><div class="ripple rp3"></div>
+    <div class="ripple rp4"></div><div class="ripple rp5"></div><div class="ripple rp6"></div>
+</div>
+
+<div class="lantern-wrap">
+    <div class="lantern-arm"></div>
+    <div class="lantern-body">
+        <span class="lantern-ch">锦</span>
+        <span class="lantern-ch">玉</span>
+    </div>
+    <div class="lantern-tassel"></div>
+    <div class="lantern-pole"></div>
+</div>
+
+<div class="scene" id="scene">
+    <div class="boat-wrap" id="boatWrap">
+        <div class="boat-float">
+            <div class="b-mast"></div>
+            <div class="b-sail"></div>
+            <div class="b-hull"><div class="b-oar"></div></div>
+        </div>
+    </div>
+    <div class="rope-svg" id="ropeSvg">
+        <svg width="320" height="130" viewBox="0 0 320 130">
+            <path class="grass-rope" d="M108,108 C140,118 180,88 220,98 C240,102 252,92 260,86"/>
+        </svg>
+    </div>
+    <div class="grass-knot-wrap" id="grassKnot">
+        <div class="g-knot"><div class="g-tail1"></div><div class="g-tail2"></div></div>
+    </div>
+    <div class="post-wrap"><div class="bamboo-post"></div></div>
+</div>
+
+<div class="input-zone" id="inputZone">
+    <input type="text" class="auth-input" id="qualificationCode" placeholder="激 活 码" maxlength="20" autocomplete="off">
+
+    <button class="enter-btn" id="verifyBtn">解 缆</button>
+</div>
+
+<div class="fog-overlay" id="fogOverlay">
+    <div class="fog-text">旅人靠岸</div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="footer-text">二零二六载 · 锦玉小手机</div>
+
+<script src="assets/js/auth.js"></script>
+
+</body>
+</html>

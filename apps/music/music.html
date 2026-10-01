@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锦玉音乐</title>
+    <link rel="stylesheet" href="music.css">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="phone" id="app-phone">
+    <div class="mini-toast" id="toast-msg"></div>
+
+    <!-- 房间 1：听风 -->
+    <div class="page" id="page-play">
+        
+        <!-- 新增：为接壤主系统准备的顶部导航栏 -->
+        <div class="sys-top-bar">
+            <div class="sys-back-btn" onclick="window.parent.postMessage('closeApp', '*')">‹ 返回</div>
+            <div class="sys-capsule">音乐</div>
+        </div>
+
+        <div class="player-stage">
+            <!-- 左侧角色头像与气泡 -->
+            <div class="avatar-box ava-left" id="role-avatar" onclick="handleAvatarClick()">角</div>
+
+            <div class="chat-bubble bubble-left" id="bubble-left">...</div>
+
+            <!-- 右侧我的头像与气泡 -->
+            <div class="avatar-box ava-right"><img id="player-avatar-img" class="player-avatar-img" src="" alt=""><span id="player-avatar-text">我</span></div>
+            <div class="chat-bubble bubble-right" id="bubble-right">...</div>
+<svg class="red-thread" viewBox="0 0 300 160" style="overflow:visible;">
+    <path class="thread-path path-l" d="M 38 46 Q 99 10, 150 20" />
+    <path class="thread-path path-r" d="M 262 46 Q 201 10, 150 20" />
+</svg>
+<div class="yuqin-box" id="yuqin-box">
+    <div class="qin-ripple"></div>
+    <div class="qin-ripple"></div>
+    <div class="qin-ripple"></div>
+    <div class="yuqin-strings"></div>
+</div>
+
+            <div class="song-title-text" id="play-song-title">未播放</div>
+        </div>
+        <!-- 歌词区 (中文竖排) -->
+        <div class="lyrics-wrapper" id="lyrics-cn">
+            <div class="silk-bg"></div>
+            <div class="lyrics-scroll-area" id="cn-scroll-area">
+                <div class="lyric-col">等待音律...</div>
+            </div>
+        </div>
+
+        <!-- 歌词区 (英文倒影，默认隐藏) -->
+        <div class="lyrics-wrapper-en" id="lyrics-en" style="display: none;">
+            <div class="mirror-lyrics" id="en-lyrics-top">
+                <div class="mirror-line">Waiting for melody...</div>
+            </div>
+            <div class="water-surface"></div>
+            <div class="mirror-reflection" id="en-lyrics-bottom">
+                <div class="reflect-line">Waiting for melody...</div>
+            </div>
+        </div>
+
+        <div class="qin-progress">
+            <span class="time-label">00:00</span>
+            <div class="string-track" id="progress-track" onclick="seekProgress(event)">
+                <div class="string-bg"></div>
+                <div class="string-fill" id="progress-fill" style="width: 0%;"></div>
+                <div class="zhizi-dot" id="progress-dot" style="left: 0%;"><div class="zp zp1"></div><div class="zp zp2"></div><div class="zp zp3"></div><div class="zp zp4"></div><div class="zp zp5"></div><div class="zp zp6"></div><div class="zc"></div></div>
+            </div>
+            <span class="time-label">00:00</span>
+        </div>
+        <div class="bottom-altar">
+            <div class="altar-left" onclick="openDrawer()">
+<div class="chopsticks"></div><div class="chopstick-rest"></div></div>
+            <div class="altar-center">
+                <div class="cake-row"><div class="cake-small" onclick="prevSong()">|◁</div><div class="cake-pink" id="btn-play" onclick="togglePlay()">▶</div><div class="cake-small" onclick="nextSong()">▷|</div></div>
+                <div class="pedestal-plate"></div>
+            </div>
+            <div class="altar-right" onclick="togglePlayMode()"><div class="altar-vase"></div></div>
+        </div>
+    </div>
+
+    <!-- 房间 2：藏阁 -->
+    <div class="page active" id="page-library">
+        <div class="profile-card">
+            <div class="profile-frame" onclick="document.getElementById('avatar-upload').click()">
+                <img id="user-avatar-img" class="avatar-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%23e8ddd4' width='80' height='80'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='KaiTi' font-size='26' fill='%235c4a45'%3E我%3C/text%3E%3C/svg%3E" alt="头像">
+            </div>
+            <div class="profile-name" id="user-name" onclick="editProfileText('user-name', 'name-input', '锦玉音乐家', 'jinyu_name')">锦玉音乐家</div>
+            <div class="profile-sig" id="user-sig" onclick="editProfileText('user-sig', 'sig-input', '点击编辑个性签名', 'jinyu_sig')">点击编辑个性签名</div>
+        </div>
+        <div class="honor-title">
+            <div class="honor-title-line"></div><span class="honor-title-text">荣誉墙</span><span class="honor-title-sub">0/6</span><div class="honor-title-line"></div>
+            <div class="manage-badge-btn" onclick="openJinnang()">整理</div>
+        </div>
+        <div class="badge-grid">
+           
+        </div>
+        <div class="honor-title" style="margin-top: 30px;">
+            <div class="honor-title-line"></div><span class="honor-title-text">我的歌单</span><div class="honor-title-line"></div>
+        </div>
+        <div class="playlist-grid" id="playlist-grid-container"></div>
+    </div>
+
+        <!-- 房间 3：闲庭 -->
+    <div class="page" id="page-lounge">
+        <div class="window-section">
+            <div class="window-box">
+                <div class="window-bg" id="window-bg">
+                    <!-- 四季图层保持不变 -->
+                    <div class="scenery-layer scenery-spring" id="scn-spring"><div class="petal petal-1"></div><div class="petal petal-2"></div><div class="petal petal-3"></div><div class="petal petal-4"></div><div class="petal petal-5"></div></div>
+                    <div class="scenery-layer scenery-summer" id="scn-summer"><div class="lotus-leaf"></div><div class="lotus-wrap badge-lian"><div class="lp lp1"></div><div class="lp lp2"></div><div class="lp lp3"></div><div class="lp lp4"></div><div class="lp lp5"></div><div class="lp lp6"></div><div class="lp lp7"></div><div class="lp lp8"></div><div class="lpod"></div></div></div>
+                    <div class="scenery-layer scenery-autumn" id="scn-autumn"><div class="moon-glow"></div><div class="moon"></div><div class="leaf leaf-1"></div><div class="leaf leaf-2"></div><div class="leaf leaf-3"></div></div>
+                    <div class="scenery-layer scenery-winter" id="scn-winter"><div class="snow snow-1"></div><div class="snow snow-2"></div><div class="snow snow-3"></div><div class="snow snow-4"></div><div class="snow snow-5"></div><div class="snow snow-6"></div><div class="frost"></div></div>
+                </div>
+                <svg class="window-svg" viewBox="0 0 320 120">
+                    <polygon points="30,10 290,10 310,30 310,90 290,110 30,110 10,90 10,30" />
+                    <rect x="50" y="30" width="220" height="60" />
+                    <line x1="30" y1="10" x2="30" y2="50" /> <line x1="10" y1="30" x2="50" y2="30" />
+                    <line x1="30" y1="70" x2="30" y2="110" /> <line x1="10" y1="90" x2="50" y2="90" />
+                    <line x1="290" y1="10" x2="290" y2="50" /> <line x1="270" y1="30" x2="310" y2="30" />
+                    <line x1="290" y1="70" x2="290" y2="110" /> <line x1="270" y1="90" x2="310" y2="90" />
+                </svg>
+            </div>
+            <div class="switch-dots">
+                <div class="dot-wrap active" onclick="changeTheme('spring', '#fdf6f0', '#e9d6db', this)"><div class="dot-color" style="background:#e9d6db;"></div><span class="dot-text">春烟</span></div>
+                <div class="dot-wrap" onclick="changeTheme('summer', '#f0f7f4', '#d1e2e1', this)"><div class="dot-color" style="background:#d1e2e1;"></div><span class="dot-text">夏岚</span></div>
+                <div class="dot-wrap" onclick="changeTheme('autumn', '#faf5ee', '#e8ddd4', this)"><div class="dot-color" style="background:#e8ddd4;"></div><span class="dot-text">秋酿</span></div>
+                <div class="dot-wrap" onclick="changeTheme('winter', '#f0f3f7', '#dce2e5', this)"><div class="dot-color" style="background:#dce2e5;"></div><span class="dot-text">冬凝</span></div>
+            </div>
+        </div>
+
+        <!-- 全新书案区域：左边玉牌，右边笔山 -->
+        <div class="desk-area">
+            <div class="jade-tokens-wrap">
+                <div class="preset-label">字帖结集</div>
+                <div id="font-preset-list" class="preset-list">
+                    <!-- 玉牌动态生成 -->
+                </div>
+            </div>
+            <div class="brush-stand-wrap">
+                <div class="plan-vertical" id="font-brush-stand">
+                    <div class="pv-rest"></div>
+                    <div class="pv-brushes">
+                        <div class="pv-brush-wrap active" id="brush-default" onclick="switchFontBrush('default')">
+                            <div class="pv-label">归真</div>
+                            <div class="pv-brush-body"><div class="pv-stick stick-spring"></div><div class="brush-head"></div></div>
+                        </div>
+                        <div class="pv-brush-wrap" id="brush-cn" onclick="switchFontBrush('cn')">
+                            <div class="pv-label" id="label-font-cn">自定1</div>
+                            <div class="pv-brush-body"><div class="pv-stick stick-autumn"></div><div class="brush-head"></div></div>
+                        </div>
+                        <div class="pv-brush-wrap" id="brush-en" onclick="switchFontBrush('en')">
+                            <div class="pv-label" id="label-font-en">自定2</div>
+                            <div class="pv-brush-body"><div class="pv-stick stick-winter"></div><div class="brush-head"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 长卷被挤到了最底下 -->
+        <div class="landscape-scroll" style="margin-top: auto;">
+            <div class="scroll-mountain"></div>
+            <div class="s-pos-1"><div class="s-label">今日听风</div><div><span class="s-num" id="stat-today-min">0</span><span class="s-unit">分</span></div></div>
+            <div class="s-pos-2"><div class="s-label">累计曲目</div><div><span class="s-num" id="stat-total-songs">0</span><span class="s-unit">首</span></div></div>
+            <div class="s-pos-3"><div class="s-label">留声岁月</div><div><span class="s-num" id="stat-total-hours">0</span><span class="s-unit">时</span></div></div>
+        </div>
+    </div>
+
+
+
+    <!-- 底部导航 -->
+    <nav class="nav-desk" id="nav-desk">
+        <div class="desk-tab" onclick="switchPage('play', this)"><div class="item-wrap"><div class="mini-qin"><div class="mini-qin-strings"></div></div></div><span class="tab-name">听风</span></div>
+        <div class="desk-tab active" onclick="switchPage('library', this)"><div class="item-wrap"><div class="mini-book"><div class="book-cover"></div><div class="book-spine"></div><div class="book-lines"></div><div class="book-ribbon"></div></div></div><span class="tab-name">藏阁</span></div>
+        <div class="desk-tab" onclick="switchPage('lounge', this)"><div class="item-wrap"><div class="mini-tea"><div class="tea-steam"><div class="steam-line"></div><div class="steam-line"></div><div class="steam-line"></div></div><div class="tea-cup"><div class="tea-liquid"></div><div class="tea-handle"></div></div><div class="tea-saucer"></div></div></div><span class="tab-name">闲庭</span></div>
+    </nav>
+
+    <!-- 二级页：歌单详情 -->
+    <div class="sub-page" id="detail-page">
+        <div class="detail-nav">
+            <div class="btn-back" onclick="closeDetail()">‹ 返回</div>
+            <div style="display:flex; gap:15px; align-items:center;">
+                <div onclick="sharePlaylist()" style="font-size:13px; color:#a08a82; cursor:pointer; font-weight:bold; letter-spacing:2px;">拓印</div>
+                <div class="btn-more" onclick="openEditModal()">⠇</div>
+            </div>
+        </div>
+        <div class="detail-header">
+            <div class="detail-cover-large" id="detail-cover"></div>
+            <div class="detail-info">
+                <div class="detail-name" id="detail-name">歌单名字</div>
+                <div class="detail-desc" id="detail-desc">歌单简介...</div>
+            </div>
+        </div>
+        <div class="detail-actions">
+            <div class="action-btn" onclick="openImportModal()">导入曲目</div>
+            <div class="action-btn" id="btn-toggle-manage" onclick="toggleManageMode()">整理卷宗</div>
+        </div>
+        <div class="song-list-container" id="detail-song-list"></div>
+        <div class="manage-bottom-bar">
+            <button class="manage-btn btn-danger" onclick="deleteSelectedSongs()">抹去</button>
+            <button class="manage-btn btn-primary" onclick="openTransferModal()">转移</button>
+
+        </div>
+    </div>
+
+    <!-- 弹窗区 -->
+    <div class="modal-overlay" id="modal-import" onclick="closeModal('modal-import')">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">导入音律</div>
+            <div class="m-btn" onclick="triggerRealImport('audio')">仅导入音频</div>
+            <div class="m-btn" onclick="triggerRealImport('lyric')">音频 + 歌词配对</div>
+            <div class="m-btn-group"><div class="m-btn" onclick="closeModal('modal-import')">取消</div></div>
+        </div>
+    </div>
+        <!-- 新增：转移曲目弹窗 -->
+    <div class="modal-overlay" id="modal-transfer" onclick="closeModal('modal-transfer')">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">转移曲目至...</div>
+            <div class="pl-scroll" id="transfer-pl-list" style="max-height: 250px; overflow-y: auto; padding: 0;"></div>
+            <div class="m-btn-group">
+                <div class="m-btn" onclick="closeModal('modal-transfer')">取消</div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- 统一的创立/修缮弹窗 -->
+    <div class="modal-overlay" id="modal-edit" onclick="closeModal('modal-edit')">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title" id="modal-edit-title">修缮卷宗</div>
+            <div class="cover-grid" id="cover-grid"></div>
+            <input type="text" class="m-input" id="edit-input-name" placeholder="卷宗名号">
+            <textarea class="m-input m-textarea" id="edit-input-desc" placeholder="写下小志..."></textarea>
+            <div class="m-btn-group" id="btn-delete-playlist-wrap">
+                <div class="m-btn danger" onclick="deleteCurrentPlaylist()">付之一炬</div>
+            </div>
+            <div class="m-btn-group">
+                <div class="m-btn" onclick="closeModal('modal-edit')">舍弃</div>
+                <div class="m-btn fill" onclick="savePlaylistEdit()">落笔</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 字帖结集命名弹窗 -->
+    <div class="modal-overlay" id="modal-preset-name" onclick="closeModal('modal-preset-name')">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">字帖结集</div>
+            <input type="text" class="m-input" id="input-preset-name" placeholder="为这组字帖起个雅号" value="新字帖">
+            <div style="display: flex; gap: 12px; justify-content: center; margin: 5px 0;">
+                <div class="jn-c-dot p-dot active" style="background:#e8e4dc;" onclick="selectPresetColor(this, 'jade-white')"></div>
+                <div class="jn-c-dot p-dot" style="background:#d1e2e1;" onclick="selectPresetColor(this, 'jade-green')"></div>
+                <div class="jn-c-dot p-dot" style="background:#d5c8c0;" onclick="selectPresetColor(this, 'jade-wood')"></div>
+                <div class="jn-c-dot p-dot" style="background:#eedbdb;" onclick="selectPresetColor(this, 'jade-red')"></div>
+            </div>
+            <div class="m-btn-group">
+                <div class="m-btn" onclick="closeModal('modal-preset-name')">舍弃</div>
+                <div class="m-btn fill" onclick="confirmSaveFontPreset()">落笔</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================== 锦囊系统 (全屏覆盖) ================== -->
+    <div class="jinnang-wrapper" id="jinnang-system">
+        <div class="jn-nav-hybrid">
+            <div class="jn-nav-header">
+                <div class="jn-nav-back" onclick="closeJinnang()">‹ 返回</div>
+                <div class="jn-nav-title">锦囊</div>
+            </div>
+            <div class="jn-nav-tabs">
+                <div class="jn-tab-jade active" onclick="switchJinnangTab(0, this)">自定义</div>
+                <div class="jn-tab-jade" onclick="switchJinnangTab(1, this)">徽章成就</div>
+                <div class="jn-tab-jade" onclick="switchJinnangTab(2, this)">徽章广场</div>
+            </div>
+        </div>
+        <div class="jn-page-container active" id="jn-page-0"><div class="create-btn" onclick="openJnEditModal()">⊕ 绘制新卷</div><div id="custom-badge-list"></div></div>
+        <div class="jn-page-container" id="jn-page-1"><div id="achievement-list"></div></div>
+        <div class="jn-page-container" id="jn-page-2"><div id="plaza-list"></div></div>
+
+        <!-- 锦囊弹窗系统 -->
+        <div class="jn-modal-overlay" id="jn-fog-overlay" onclick="closeFog()"><div class="jn-fog-card" onclick="event.stopPropagation()"><div class="jn-fog-icon" id="jn-fog-icon"></div><div class="jn-fog-title" id="jn-fog-title"></div><div class="jn-fog-condition" id="jn-fog-condition"></div><div class="jn-fog-prog-wrap"><div class="jn-fog-prog-text" id="jn-fog-prog-text"></div><div class="jn-fog-prog-track"><div class="jn-fog-prog-fill" id="jn-fog-prog-fill" style="width:0%"></div></div></div><div class="jn-fog-close" onclick="closeFog()">知晓了</div></div></div>
+        <div class="jn-modal-overlay" id="jn-postcard-modal" onclick="closePostcard()"><div class="jn-btn-close" onclick="closePostcard()">×</div><div class="jn-modal-wrap" onclick="event.stopPropagation()"><div class="jn-scene"><div class="jn-flip-card" id="jn-myCard"><div class="jn-front" id="jn-export-front"><div id="jn-anim-container"></div><div class="jn-front-icon-box" id="jn-modal-icon"></div><div class="jn-front-text-area"><div class="jn-front-title" id="jn-modal-title"></div><div class="jn-front-sub" id="jn-modal-subtitle"></div><div class="jn-front-quote" id="jn-modal-quote"></div><div id="jn-modal-author" style="font-size: 9px; letter-spacing: 1px; margin-top: 12px; opacity: 0.7;"></div></div></div><div class="jn-back" id="jn-export-back"><div class="jn-back-logo">锦玉</div><div class="jn-back-sub">JINYU MUSIC</div><div class="jn-data-box"><div class="jn-data-label">达成条件</div><div class="jn-data-value" id="jn-modal-cond"></div></div><div class="jn-back-date" id="jn-modal-date-back"></div></div></div></div><div class="jn-action-group"><button class="jn-btn-gufeng" onclick="flipCard()">翻转把玩</button><button class="jn-btn-gufeng jn-btn-primary" id="jn-exportBtn" onclick="simulateExport()">拓印留影</button></div></div></div>
+        <div class="jn-modal-overlay" id="jn-edit-modal"><div class="jn-modal-letter"><div class="jn-letter-content"><div class="jn-upload-area-vert"><div class="jn-upload-box" onclick="triggerJnUpload()">+</div><input type="file" id="jn-upload-input" accept="image/*" style="display:none" onchange="handleJnUpload(event)"><div class="jn-upload-label">置入画影</div></div><div class="jn-input-area-vert"><div class="jn-input-col"><div class="jn-input-label-vert">名号</div><input type="text" class="jn-input-vert" id="jn-edit-name" placeholder="如：杰伦铁粉"></div><div class="jn-input-col"><div class="jn-input-label-vert">小志</div><textarea class="jn-input-vert" id="jn-edit-desc" placeholder="撰写描述..."></textarea></div></div></div><div class="jn-modal-actions"><div class="jn-color-picker"><div class="jn-c-dot active" style="background:#e8e4dc;" onclick="selectJnColor(this, 'jade')"></div><div class="jn-c-dot" style="background:#b8c8c2;" onclick="selectJnColor(this, 'bamboo')"></div><div class="jn-c-dot" style="background:#887870;" onclick="selectJnColor(this, 'wood')"></div><div class="jn-c-dot" style="background:#d4a0a0;" onclick="selectJnColor(this, 'rouge')"></div><input type="color" class="jn-c-custom-input" id="jn-custom-color-picker" value="#5c4a45" oninput="selectJnCustomColor(this.value)"></div><div class="jn-btn-group"><span class="jn-btn-text" onclick="closeJnEditModal()">舍弃</span><span class="jn-btn-text jn-primary" onclick="saveCustomBadge()">落笔</span></div></div></div></div>
+    </div>
+
+    <!-- 隐藏的系统输入框 -->
+    <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+    <input type="file" id="playlist-cover-upload" accept="image/*" style="display: none;">
+    <input type="file" id="single-lrc-upload" accept=".lrc" style="display: none;">
+    <input type="file" id="font-upload-cn" accept=".ttf,.woff,.otf" style="display: none;">
+    <input type="file" id="font-upload-en" accept=".ttf,.woff,.otf" style="display: none;">
+    <input type="file" id="real-import-audio" accept="audio/*" multiple style="display: none;">
+    <input type="file" id="real-import-lyric" accept="audio/*,.lrc" multiple style="display: none;">
+    <audio id="global-audio-player" style="display: none;"></audio>
+
+    <!-- 筷子抽屉弹窗 -->
+    <div class="drawer-overlay" id="drawer-overlay" onclick="handleDrawerOverlay(event)">
+        <div class="drawer-box" onclick="event.stopPropagation()">
+            <div class="drawer-handle"></div>
+            <div class="drawer-tabs">
+                <div class="d-tab active" onclick="switchDrawerTab('library', this)">锦盒卷宗</div>
+                <div class="d-tab" onclick="switchDrawerTab('search', this)">寻音觅迹</div>
+            </div>
+            <div class="drawer-content">
+                <div class="d-view active" id="d-view-library">
+                    <div class="pl-scroll" id="d-pl-scroll"></div>
+                    <div class="song-panel" id="d-song-panel">
+                        <div class="song-nav">
+                            <div class="song-nav-back" onclick="closeDrawerSongPanel()">‹ 返回</div>
+                            <div class="song-nav-title" id="d-song-panel-title"></div>
+                        </div>
+                        <div class="song-scroll" id="d-song-scroll"></div>
+                    </div>
+                </div>
+                <div class="d-view" id="d-view-search">
+                    <div class="search-wrap">
+                        <div class="search-bar">
+                            <svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="#5c4a45" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+                            <input class="search-input" type="text" placeholder="输入曲名或名号..." oninput="handleDrawerSearch(this.value)">
+                        </div>
+                        <div class="search-hint">阁中珍藏</div>
+                        <div id="d-search-results"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 伴聊专属遮罩 -->
+    <div class="chat-overlay" id="chat-overlay" onclick="closeChatAll()"></div>
+
+    <!-- 伴聊底部输入区 -->
+    <div class="chat-input-bar" id="chat-input-bar">
+        <div class="chat-switch-btn" onclick="openRoleDrawer()">换角</div>
+        <input type="text" class="chat-input-field" id="chat-input" placeholder="说点什么...">
+        <button class="chat-send-btn" onclick="sendChatMessage()">发送</button>
+    </div>
+    <!-- 伴聊选角抽屉 -->
+    <div class="role-drawer" id="role-drawer">
+        <div class="role-drawer-title">选择音乐搭子</div>
+        <div class="role-list">
+            <div class="role-item" onclick="selectRole('搭子', '听歌搭子')">
+                <div class="r-avatar" style="background: #b8c8c2;">搭子</div>
+                <div class="r-info"><div class="r-name">听歌搭子</div><div class="r-desc">主打一个陪伴，情绪稳定。</div></div>
+            </div>
+            <div class="role-item" onclick="selectRole('树洞', '情感树洞')">
+                <div class="r-avatar" style="background: #dcd6ce;">树洞</div>
+                <div class="r-info"><div class="r-name">情感树洞</div><div class="r-desc">温柔倾听，适合深夜emo。</div></div>
+            </div>
+            <div class="role-item" onclick="selectRole('毒舌', '毒舌网友')">
+                <div class="r-avatar" style="background: #d4a0a0;">毒舌</div>
+                <div class="r-info"><div class="r-name">毒舌网友</div><div class="r-desc">说话直白，不服就干。</div></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 隐藏的分享卡片模板 -->
+    <div id="share-card-container" style="position: fixed; top: 0; left: 0; z-index: -1000; opacity: 0; pointer-events: none;">
+        <div class="jn-share-card" id="export-share-card">
+            <div class="js-header"><div class="js-logo-text">锦玉</div><div class="js-brand">JINYU MUSIC</div></div>
+            <div class="js-main">
+                <div class="js-cover" id="share-pl-cover"><span>卷</span></div>
+                <div class="js-info">
+                    <div class="js-title" id="share-pl-title">古风雅集</div>
+                    <div class="js-desc" id="share-pl-desc">简介...</div>
+                </div>
+            </div>
+            <div class="js-tracklist">
+                <div class="js-grid" id="share-pl-grid"></div>
+                <div class="js-track-more" id="share-pl-more">... 等 12 首曲目</div>
+            </div>
+            <div class="js-footer">
+                <div class="js-author">由 <b id="share-pl-author">锦玉音乐家</b> 编撰<br><span class="js-date" id="share-pl-date"></span></div>
+            </div>
+        </div>
+    </div>
+
+</div> <!-- ！！！这个才是真正的手机壳闭合标签！！！ -->
+    <script src="../../assets/js/dataHub.js"></script>
+    <script src="../../assets/js/fileDB.js"></script> 
+    <script src="music.js"></script>
+</body>
+</html>

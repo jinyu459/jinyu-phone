@@ -1,0 +1,13 @@
+{
+  "appId": "com.jinyu.phone",
+  "appName": "锦玉",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

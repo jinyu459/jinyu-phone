@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>美化</title>
+      <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+   <div class="phone-container">
+  <div class="app-container">
+
+      <!-- ══ 顶部 ══ -->
+      <div class="header">
+          <button class="back-btn" id="backBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              返回
+          </button>
+          <div class="header-title">美化</div>
+      </div>
+
+<div class="main-body">
+
+      <!-- ══ 线装打孔导航 ══ -->
+      <div class="tabs">
+          <div class="tab-item active" data-target="tab-seasons">四季</div>
+          <div class="tab-item" data-target="tab-fonts">字体</div>
+          <div class="tab-item" data-target="tab-wallpapers">壁纸</div>
+          <div class="tab-item" data-target="tab-custom">自定义</div>
+      </div>
+
+      <!-- ══════════ 四季面板 ══════════ -->
+      <div id="tab-seasons" class="tab-content active">
+
+          <div class="builtin-group">
+              <div class="card-grid">
+                  <div class="season-card spring-card" data-season="spring">春</div>
+                  <div class="season-card summer-card" data-season="summer">夏</div>
+                  <div class="season-card autumn-card" data-season="autumn">秋</div>
+                  <div class="season-card winter-card" data-season="winter">冬</div>
+              </div>
+          </div>
+
+          <div class="custom-section jinyu-card">
+              <h3>我的主题</h3>
+              <p class="sub-title">自由组合已保存的字体、壁纸与图标预设</p>
+              <div id="my-themes-gallery" class="gallery-box" style="justify-content: flex-start; padding: 16px;">
+                  <button class="jinyu-btn dashed-btn" id="add-theme-btn" style="width: auto; padding: 8px 16px; border-radius: 20px;" onclick="openThemeModal()">
+                      + 新建主题组合
+                  </button>
+              </div>
+          </div>
+          <div class="custom-section jinyu-card">
+              <h3>应用内部主题</h3>
+              <p class="sub-title">仅改变本页面配色，不影响主屏幕</p>
+              <div class="app-theme-grid">
+                  <div class="app-theme-card atc-default active-app-theme" data-app-theme="default">默认</div>
+                  <div class="app-theme-card atc-peach" data-app-theme="peach">桃花</div>
+                  <div class="app-theme-card atc-sky" data-app-theme="sky">晴空</div>
+                  <div class="app-theme-card atc-pear" data-app-theme="pear">梨花</div>
+              </div>
+          </div>
+
+
+      </div>
+
+      <!-- ══════════ 字体面板 ══════════ -->
+      <div id="tab-fonts" class="tab-content">
+
+          <div class="builtin-group">
+              <div class="card-grid">
+                  <div class="font-card season-card default-font-card" data-font="default" style="font-family: sans-serif;">默认字体</div>
+                  <div class="font-card season-card kaiti-card" data-font="kaiti" style="font-family: 'KaiTi', '楷体', serif;">楷体</div>
+                  <div class="font-card season-card songti-card" data-font="songti" style="font-family: 'SimSun', '宋体', serif;">宋体</div>
+              </div>
+          </div>
+
+          <!-- 字体预览卡（新增功能区） -->
+          <div class="font-preview-card">
+              <div class="font-preview-header">
+                  <span class="font-preview-title">字体预览</span>
+              </div>
+              <input type="text" class="font-preview-input" id="preview-text-input" value="海内存知己，天涯若比邻" placeholder="输入预览文字">
+              <div class="font-preview-text" id="font-preview-display">海内存知己，天涯若比邻</div>
+          </div>
+
+          <div class="jinyu-card">
+              <h3>自定义字体库</h3>
+
+            
+
+              <div class="custom-input-group border-top">
+                  <label>上传本地字体 (支持大文件)</label>
+                  <input type="file" id="custom-font-file-input" accept=".ttf,.otf,.woff" style="display: none;">
+                  <button class="jinyu-btn dashed-btn" onclick="document.getElementById('custom-font-file-input').click()">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                      选择字体文件
+                  </button>
+
+                  <div id="font-preview-area" class="preview-box" style="display: none;">
+                      <div class="preview-label">字体预览：</div>
+                      <div id="font-preview-text" class="preview-text">海内存知己，天涯若比邻</div>
+                      <div class="input-with-btn">
+                          <input type="text" id="font-name-input" class="jinyu-input" placeholder="给字体起个名字">
+                          <button class="jinyu-btn primary-tint" onclick="confirmSaveFont()">保存预设</button>
+                          <button class="jinyu-btn gray-tint" onclick="cancelSaveFont()">取消</button>
+                      </div>
+                  </div>
+              </div>
+
+              <div id="custom-fonts-gallery" class="gallery-box">
+                  <span class="empty-tip">暂无自定义字体</span>
+              </div>
+          </div>
+      </div>
+
+      <!-- ══════════ 壁纸面板 ══════════ -->
+      <div id="tab-wallpapers" class="tab-content">
+
+          <div class="builtin-group">
+              <div class="card-grid">
+                  <button class="wallpaper-btn season-card wp-default" data-wallpaper="default">默认</button>
+              </div>
+          </div>
+
+          <div class="jinyu-card">
+              <h3>自定义壁纸</h3>
+              <p class="sub-title">上传你喜欢的图片作为手机背景</p>
+
+              <input type="file" id="custom-wallpaper-upload" accept="image/*" style="display: none;">
+
+              <div class="action-row">
+                  <button class="jinyu-btn dashed-btn" onclick="document.getElementById('custom-wallpaper-upload').click()">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                      上传新壁纸
+                  </button>
+                  <button class="jinyu-btn danger-tint" id="clear-wallpaper-btn" style="display: none;" onclick="clearCustomWallpaper()">恢复默认</button>
+              </div>
+
+              <div class="custom-input-group" style="margin-top: 16px;">
+                  <label>为自定义壁纸命名 (需先选中一张壁纸)</label>
+                  <div class="input-with-btn">
+                      <input type="text" id="wallpaper-name-input" class="jinyu-input" placeholder="输入壁纸名称">
+                      <button class="jinyu-btn primary-tint" onclick="saveWallpaperName()">确认命名</button>
+                  </div>
+              </div>
+
+              <div id="wallpaper-gallery" class="gallery-box horizontal-scroll">
+                  <span class="empty-tip">暂无自定义图片</span>
+              </div>
+          </div>
+      </div>
+
+      <!-- ══════════ 自定义面板 ══════════ -->
+      <div id="tab-custom" class="tab-content">
+
+          <!-- 图标外观 -->
+          <div class="custom-section">
+              <h3>图标外观</h3>
+              <div class="control-row">
+                  <span class="control-label">圆角</span>
+                  <div class="control-body">
+                      <input type="range" id="rangeRadius" min="0" max="30" value="15">
+                      <span class="control-value" id="valRadius">15px</span>
+                  </div>
+              </div>
+              <div class="control-row">
+                  <span class="control-label">大小</span>
+                  <div class="control-body">
+                      <input type="range" id="rangeSize" min="40" max="80" value="60">
+                      <span class="control-value" id="valSize">60px</span>
+                  </div>
+              </div>
+              <div class="preview-area">
+                  <div class="preview-icon-box">
+                      <div class="preview-icon" id="previewIcon">预览</div>
+                      <span class="preview-icon-name">实时效果</span>
+                  </div>
+              </div>
+          </div>
+
+          <!-- 图标图片与名称（双列网格） -->
+          <div class="custom-section">
+              <h3>图标图片与名称</h3>
+                            <div class="batch-import-area">
+                  <div class="action-row">
+                      <label class="jinyu-btn dashed-btn" for="batch-icon-input" style="cursor:pointer;">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                          批量导入（最多8张）
+                      </label>
+                      <button class="jinyu-btn gray-tint" onclick="clearBatchPool()">清空图库</button>
+                  </div>
+                  <input type="file" id="batch-icon-input" accept="image/*" multiple style="position:fixed;left:-9999px;opacity:0;">
+                  <div id="batch-pool" class="batch-pool">
+                      <span class="empty-tip">点击上方按钮批量导入图片</span>
+                  </div>
+                  <p class="sub-title" id="batch-hint" style="display:none;">点击图片选中，再点下方图标的预览方块分配</p>
+
+              </div>
+
+              <div class="icon-edit-grid">
+
+                  <div class="icon-edit-item">
+                      <div class="icon-img-preview" id="preview_chat"></div>
+                      <input type="text" class="name-input" id="name_chat" placeholder="聊天">
+                      <div class="icon-btn-row">
+                          <button class="img-pick-btn" onclick="pickIconImage('chat')">选择</button>
+                          <button class="img-clear-btn" onclick="clearIconImage('chat')">清除</button>
+                      </div>
+                      <input type="file" id="fileInput_chat" accept="image/*" style="display:none" onchange="handleImageSelect('chat', this)">
+                      <span class="app-origin-label">聊天</span>
+                  </div>
+
+                  <div class="icon-edit-item">
+                      <div class="icon-img-preview" id="preview_setting"></div>
+                      <input type="text" class="name-input" id="name_setting" placeholder="设置">
+                      <div class="icon-btn-row">
+                          <button class="img-pick-btn" onclick="pickIconImage('setting')">选择</button>
+                          <button class="img-clear-btn" onclick="clearIconImage('setting')">清除</button>
+                      </div>
+                      <input type="file" id="fileInput_setting" accept="image/*" style="display:none" onchange="handleImageSelect('setting', this)">
+                      <span class="app-origin-label">设置</span>
+                  </div>
+
+                  <div class="icon-edit-item">
+                      <div class="icon-img-preview" id="preview_music"></div>
+                      <input type="text" class="name-input" id="name_music" placeholder="音乐">
+                      <div class="icon-btn-row">
+                          <button class="img-pick-btn" onclick="pickIconImage('music')">选择</button>
+                          <button class="img-clear-btn" onclick="clearIconImage('music')">清除</button>
+                      </div>
+                      <input type="file" id="fileInput_music" accept="image/*" style="display:none" onchange="handleImageSelect('music', this)">
+                      <span class="app-origin-label">音乐</span>
+                  </div>
+
+                  <div class="icon-edit-item">
+                      <div class="icon-img-preview" id="preview_theme"></div>
+                      <input type="text" class="name-input" id="name_theme" placeholder="美化">
+                      <div class="icon-btn-row">
+                          <button class="img-pick-btn" onclick="pickIconImage('theme')">选择</button>
+                          <button class="img-clear-btn" onclick="clearIconImage('theme')">清除</button>
+                      </div>
+                      <input type="file" id="fileInput_theme" accept="image/*" style="display:none" onchange="handleImageSelect('theme', this)">
+                      <span class="app-origin-label">美化</span>
+                  </div>
+
+                  <div class="icon-edit-item">
+                      <div class="icon-img-preview" id="preview_worldbook"></div>
+                      <input type="text" class="name-input" id="name_worldbook" placeholder="世界书">
+                      <div class="icon-btn-row">
+                          <button class="img-pick-btn" onclick="pickIconImage('worldbook')">选择</button>
+                          <button class="img-clear-btn" onclick="clearIconImage('worldbook')">清除</button>
+                      </div>
+                      <input type="file" id="fileInput_worldbook" accept="image/*" style="display:none" onchange="handleImageSelect('worldbook', this)">
+                      <span class="app-origin-label">世界书</span>
+                  </div>
+
+                  <div class="icon-edit-item">
+                      <div class="icon-img-preview" id="preview_online"></div>
+                      <input type="text" class="name-input" id="name_online" placeholder="联机">
+                      <div class="icon-btn-row">
+                          <button class="img-pick-btn" onclick="pickIconImage('online')">选择</button>
+                          <button class="img-clear-btn" onclick="clearIconImage('online')">清除</button>
+                      </div>
+                      <input type="file" id="fileInput_online" accept="image/*" style="display:none" onchange="handleImageSelect('online', this)">
+                      <span class="app-origin-label">联机</span>
+                  </div>
+
+                  <div class="icon-edit-item">
+                      <div class="icon-img-preview" id="preview_farm"></div>
+                      <input type="text" class="name-input" id="name_farm" placeholder="农场">
+                      <div class="icon-btn-row">
+                          <button class="img-pick-btn" onclick="pickIconImage('farm')">选择</button>
+                          <button class="img-clear-btn" onclick="clearIconImage('farm')">清除</button>
+                      </div>
+                      <input type="file" id="fileInput_farm" accept="image/*" style="display:none" onchange="handleImageSelect('farm', this)">
+                      <span class="app-origin-label">农场</span>
+                  </div>
+
+                  <div class="icon-edit-item">
+                      <div class="icon-img-preview" id="preview_study"></div>
+                      <input type="text" class="name-input" id="name_study" placeholder="学习">
+                      <div class="icon-btn-row">
+                          <button class="img-pick-btn" onclick="pickIconImage('study')">选择</button>
+                          <button class="img-clear-btn" onclick="clearIconImage('study')">清除</button>
+                      </div>
+                      <input type="file" id="fileInput_study" accept="image/*" style="display:none" onchange="handleImageSelect('study', this)">
+                      <span class="app-origin-label">学习</span>
+                  </div>
+
+              </div>
+          </div>
+
+          <!-- 我的图标预设（含恢复默认+保存） -->
+          <div class="custom-section jinyu-card">
+              <h3>我的图标预设</h3>
+              <div class="custom-input-group">
+                  <label>将当前上传的图标保存为固定组合</label>
+                  <div class="input-with-btn">
+                      <input type="text" id="icon-preset-name-input" class="jinyu-input" placeholder="给这套图标起个名字">
+                      <button class="jinyu-btn primary-tint" onclick="saveIconPreset()">保存预设</button>
+                  </div>
+              </div>
+              <div id="icon-presets-gallery" class="gallery-box">
+                  <span class="empty-tip">暂无保存的图标预设</span>
+              </div>
+              <div class="presets-footer-actions">
+                  <button class="reset-btn" id="resetBtn">恢复默认</button>
+                  <button class="save-btn" id="saveBtn">保存设置</button>
+              </div>
+          </div>
+      </div>
+</div>
+
+      <!-- 底部操作栏（按钮已移至图标预设区，此处保留空壳） -->
+      <div class="bottom-action-bar">
+
+        <div class="btn-row"></div>
+      </div>
+<!-- 弹窗（保留全部原始inline style） -->
+          <div id="theme-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+              <div style="background: #F2EFE8; width: 90%; max-width: 400px; border-radius: 10px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid rgba(166,153,138,0.2);">
+                  <h3 style="margin-bottom: 16px; text-align: center; font-size: 14px; letter-spacing: 3px; font-weight: 400;">搭配新主题</h3>
+
+                  <div style="margin-bottom: 12px;">
+                      <label style="font-size: 11px; color: #8B857D; display: block; margin-bottom: 8px;">1. 选择字体</label>
+                      <div id="modal-font-list" style="display: flex; gap: 8px; flex-wrap: wrap; max-height: 80px; overflow-y: auto;"></div>
+                  </div>
+
+                  <div style="margin-bottom: 12px;">
+                      <label style="font-size: 11px; color: #8B857D; display: block; margin-bottom: 8px;">2. 选择壁纸</label>
+                      <div id="modal-wallpaper-list" style="display: flex; gap: 8px; flex-wrap: wrap; max-height: 80px; overflow-y: auto;"></div>
+                  </div>
+
+                  <div style="margin-bottom: 16px;">
+                      <label style="font-size: 11px; color: #8B857D; display: block; margin-bottom: 8px;">3. 选择图标预设</label>
+                      <div id="modal-icon-list" style="display: flex; gap: 8px; flex-wrap: wrap; max-height: 80px; overflow-y: auto;"></div>
+                  </div>
+
+                  <div style="margin-bottom: 16px;">
+                      <input type="text" id="modal-theme-name" class="jinyu-input" placeholder="给这个新主题起个名字" style="width: 100%; box-sizing: border-box;">
+                  </div>
+
+                  <div style="display: flex; gap: 12px;">
+                      <button class="jinyu-btn gray-tint" style="flex: 1;" onclick="closeThemeModal()">取消</button>
+                      <button class="jinyu-btn primary-tint" style="flex: 1;" onclick="confirmCreateTheme()">确定</button>
+                  </div>
+              </div>
+          </div>
+  </div>
+
+
+<script src="../../assets/js/dataHub.js"></script>
+<script src="../../assets/js/fileDB.js"></script>
+ <script src="theme.js"></script>
+</body>
+</html>

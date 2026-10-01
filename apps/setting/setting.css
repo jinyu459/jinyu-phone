@@ -1,0 +1,131 @@
+/* ================= 间距与颜色控制器 ================= */
+:root {
+    --content-top-padding: 90px;  
+    --card-gap: 20px;             
+    --bookmark-top: 130px;        
+    --bookmark-gap: 12px;         
+    
+    /* 方案 E：纯白底 + 黛青字 */
+    --bookmark-active-bg: rgba(252,252,252,0.95); 
+    --bookmark-active-text: #A8BDB5;
+
+    /* 基础颜色 */
+    --text-main: #5d534a;
+    --text-light: #8b8279;
+    --danger-color: #D4A5A5;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "STKaiti", "楷体", serif;
+    color: var(--text-main);
+    /* 假设手机壳有背景，这里不写死背景色 */
+}
+
+/* ================= 顶部悬浮区 ================= */
+.header {
+    position: absolute; top: 0; left: 0; width: 100%;
+    padding: 20px 20px 0 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10;
+}
+.header h1 { display: none; /* 隐藏原生大标题 */ }
+.back-btn { font-size: 14px; color: var(--text-main); cursor: pointer; opacity: 0.8; letter-spacing: 1px; }
+.app-badge {
+    background: rgba(252, 252, 252, 0.6); backdrop-filter: blur(5px);
+    border: 1px solid rgba(0, 0, 0, 0.05); padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; color: var(--text-light); display: flex; align-items: center; gap: 6px; letter-spacing: 1px;
+}
+.app-badge-dot { width: 4px; height: 4px; background: #A8BDB5; border-radius: 50%; }
+
+/* ================= 内容区 ================= */
+.content-area {
+    height: 100vh; 
+    padding: var(--content-top-padding) 45px 20px 20px; 
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+.content-area::-webkit-scrollbar { display: none; }
+
+.settings-tab { display: none; animation: fadeIn 0.3s ease; }
+.settings-tab.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ================= 卡片与组件 ================= */
+.jinyu-card {
+    background: rgba(252, 252, 252, 0.7); backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.04); border-radius: 12px;
+    padding: 20px; margin-bottom: var(--card-gap);
+}
+.card-title { font-size: 15px; font-weight: bold; margin: 0 0 20px 0; letter-spacing: 1px; }
+.card-desc { font-size: 11px; color: var(--text-light); margin-top: -12px; margin-bottom: 15px; line-height: 1.5; }
+
+.input-group { margin-bottom: 15px; }
+.input-group label { display: block; font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
+.jinyu-input {
+    width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 8px 0; font-family: inherit; font-size: 13px; color: var(--text-main); transition: border-color 0.3s;
+}
+.jinyu-input:focus { border-bottom-color: rgba(0,0,0,0.2); outline: none; }
+
+.btn-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.jinyu-btn { font-family: inherit; font-size: 12px; padding: 8px 16px; border-radius: 20px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
+.jinyu-btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--text-main); color: #fff; border: none; }
+.btn-outline { background: transparent; border: 1px solid rgba(0,0,0,0.1); color: var(--text-main); }
+.btn-text { background: transparent; border: none; color: var(--text-light); padding: 8px 4px; }
+.btn-danger { background: transparent; border: 1px solid var(--danger-color); color: var(--danger-color); }
+
+/* ================= 预设列表 (兼容JS动态生成的胶囊) ================= */
+.jinyu-list { list-style: none; padding: 0; margin: 0; }
+
+/* 覆盖 JS 生成的 li.preset-item 样式，使其变成胶囊 */
+.preset-item {
+    background: rgba(252, 252, 252, 0.5); border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 16px; margin-bottom: 10px; padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: all 0.3s ease; flex-wrap: wrap; gap: 10px;
+}
+.preset-item.active-preset { border-color: #A8BDB5; background: rgba(168, 189, 181, 0.08); }
+
+.preset-name { font-weight: bold; font-size: 13px; }
+.active-badge { font-size: 10px; background: #A8BDB5; color: white; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+
+/* JS 生成的按钮组 */
+.preset-item div:last-child { display: flex; gap: 8px; }
+.preset-item button { padding: 4px 10px; font-size: 11px; }
+
+/* ================= 右侧实体书签 ================= */
+.bookmark-nav {
+    position: absolute; right: 0; top: var(--bookmark-top);
+    display: flex; flex-direction: column; gap: var(--bookmark-gap); z-index: 20;
+}
+.bookmark-item {
+    writing-mode: vertical-rl; letter-spacing: 4px; padding: 16px 6px;
+    background: rgba(252, 252, 252, 0.6); backdrop-filter: blur(5px);
+    border: 1px solid rgba(0, 0, 0, 0.05); border-right: none; border-radius: 8px 0 0 8px;
+    font-size: 12px; color: var(--text-light); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -2px 2px 10px rgba(0,0,0,0.02); transform: translateX(4px);
+}
+.bookmark-item:hover { transform: translateX(0); background: rgba(252, 252, 252, 0.9); }
+.bookmark-item.active {
+    background: var(--bookmark-active-bg); 
+    color: var(--bookmark-active-text);
+    transform: translateX(0);
+    box-shadow: -4px 4px 15px rgba(0,0,0,0.08);
+    font-weight: bold;
+}
+
+/* 预览区域 */
+.preview-box { margin-top: 20px; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px; font-size: 12px; }
+.preview-label { color: var(--text-light); margin-right: 10px; }
+.preview-text { color: #A8BDB5; }
+.danger-text { color: var(--danger-color); }
+/* 干掉浏览器自动填充的丑蓝色背景 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px rgba(252, 252, 252, 0.9) inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}

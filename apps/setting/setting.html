@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 测试版</title> 
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="./setting.css">
+</head>
+<body>
+
+    <!-- 顶部返回与标题 (悬浮) -->
+    <div class="header">
+        <div class="back-btn" onclick="goBack()">‹ 返回</div>
+        <div class="app-badge">设置</div>
+    </div>
+
+
+    <!-- 整个页面改为内容区铺满，右侧挂书签 -->
+    <div class="content-area">
+        
+        <!-- 标签页 1：API预设管理 -->
+        <div id="tab-api" class="settings-tab active">
+            <div class="jinyu-card">
+                <h3 class="card-title">API 预设列表</h3>
+                <!-- JS 会往这个 ul 里面塞胶囊 -->
+                <ul id="api-presets-list" class="jinyu-list">
+                    <!-- 预设列表动态填充 -->
+                </ul>
+                <button class="jinyu-btn btn-outline" style="margin-top: 10px;" onclick="createNewApiPreset()">+ 新建预设</button>
+            </div>
+
+            <div class="jinyu-card">
+                <h3 class="card-title" id="api-form-title">新建 API 预设</h3>
+                
+                <div class="input-group">
+                    <label>预设名称</label>
+                    <input type="text" id="api-name" class="jinyu-input" placeholder="例如：OpenAI 默认">
+                </div>
+                
+                <div class="input-group">
+                    <label>API URL</label>
+                    <input type="text" id="api-url" class="jinyu-input" placeholder="https://api.openai.com/v1/chat/completions">
+                </div>
+                
+                <div class="input-group">
+                    <label>API Key</label>
+                    <input type="password" id="api-key" class="jinyu-input" placeholder="sk-...">
+                </div>
+                
+                <div class="input-group">
+                    <label>模型名称 (Model)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="api-model" class="jinyu-input" style="margin:0; flex: 1;" placeholder="gpt-3.5-turbo">
+                        <button class="jinyu-btn btn-text" style="margin:0;" onclick="fetchApiModels()">拉取模型</button>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>温度 (Temperature)</label>
+                    <input type="number" id="api-temperature" class="jinyu-input" step="0.1" min="0" max="2" placeholder="0.7">
+                </div>
+
+                <div class="btn-group">
+                    <button id="api-submit-btn" class="jinyu-btn btn-primary" onclick="saveApiPreset()">保存预设</button>
+                    <button class="jinyu-btn btn-outline" onclick="testApiPreset()">测试连接</button>
+                    <button class="jinyu-btn btn-text" onclick="cancelApiEdit()">取消 / 清空</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 标签页 2：外观设置 -->
+        <div id="tab-appearance" class="settings-tab">
+            <div class="jinyu-card">
+                <h3 class="card-title">Dock 栏一言设置</h3>
+                <div class="input-group">
+                    <label>自定义诗句/一言</label>
+                    <input type="text" id="dock-poem-input" class="jinyu-input" placeholder="输入你想在底部显示的话...">
+                </div>
+                <div class="btn-group">
+                    <button class="jinyu-btn btn-outline" onclick="saveDockPoem()">保存一言</button>
+                    <button class="jinyu-btn btn-text" onclick="resetDockPoem()">恢复默认</button>
+                </div>
+
+                <!-- 诗句预览区域 -->
+                <div class="preview-box">
+                    <span class="preview-label">当前预览：</span>
+                    <span id="dock-poem-preview" class="preview-text"></span>
+                </div>
+            </div>
+
+             <!-- 新增：全屏/手机壳适配 -->
+            <div class="jinyu-card">
+                <h3 class="card-title">屏幕适配 (手机壳)</h3>
+                <p class="card-desc">开启后将隐藏模拟器外壳，铺满您的真实手机屏幕。</p>
+                <button id="fullscreen-btn" class="jinyu-btn btn-outline" onclick="toggleFullScreenMode()">开启全屏沉浸</button>
+            </div>
+        </div>
+               
+        <!-- 标签页 3：数据管理 -->
+        <div id="tab-data" class="settings-tab">
+            <div class="jinyu-card">
+                <h3 class="card-title">备份与恢复</h3>
+                <input type="file" id="backup-import-input" style="display: none;" accept=".json">
+                <div class="btn-group">
+                    <button class="jinyu-btn btn-outline" onclick="triggerBackupImport()">导入备份</button>
+                    <button class="jinyu-btn btn-outline" onclick="exportBackup()">导出备份</button>
+                </div>
+            </div>
+            <div class="jinyu-card">
+                <h3 class="card-title danger-text">危险操作</h3>
+                <div class="btn-group">
+                    <button class="jinyu-btn btn-danger" onclick="clearCache()">清除缓存</button>
+                    <button class="jinyu-btn btn-danger" onclick="resetApp()">重置应用</button>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- content-area 结束 -->
+
+    <!-- 右侧实体书签导航 (替代了原来的 ul.nav-tabs) -->
+    <div class="bookmark-nav nav-tabs">
+        <div class="bookmark-item nav-item active" onclick="switchSettingsTab('tab-api', this)">API预设</div>
+        <div class="bookmark-item nav-item" onclick="switchSettingsTab('tab-appearance', this)">外观设置</div>
+        <div class="bookmark-item nav-item" onclick="switchSettingsTab('tab-data', this)">数据管理</div>
+    </div>
+
+    <script src="../../assets/js/dataHub.js"></script>
+    <script src="../../assets/js/fileDB.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+   <script src="/apps/setting/setting.js"></script>
+</body>
+</html>

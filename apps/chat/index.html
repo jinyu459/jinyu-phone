@@ -1,0 +1,533 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锦玉小手机 - 核心框架</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="chat-tools.css">
+    <link rel="stylesheet" href="presetManager.css">
+<script src="eventBus.js"></script>
+    <script src="dataHub.js"></script>
+    <script src="stores/maskStore.js"></script>
+<script src="stores/contactStore.js"></script>
+<script src="stores/chatStore.js"></script>
+<script src="stores/walletStore.js"></script>
+<script src="stores/mediaStore.js"></script>
+<script src="stores/settingsStore.js"></script>
+</head>
+<body>
+
+    <div id="phone-screen">
+        <div id="test-container">
+
+<div id="page-chuanshu" class="page-view active">
+    <div class="page-header" style="display:flex; justify-content:space-between; padding:0 12px;">
+<button id="back-to-desktop" class="header-back-btn" onclick="window.parent.postMessage('closeApp', '*')">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+    </svg>
+    <span>返回</span>
+</button>
+        <span style="font-size:18px;font-weight:bold;color:var(--theme-accent);">传书</span>
+        <div style="width:60px;"></div>
+    </div>
+    <div class="page-content" id="contact-list-container"></div>
+</div>
+
+          <!-- 改为 -->
+<div id="page-gujiao" class="page-view">
+    <iframe id="gujiao-demo-frame" src="yutang2.html" title="故交鱼塘" loading="eager"></iframe>
+</div>
+
+            <div id="page-pengyouquan" class="page-view">
+                <div class="page-header">朋友圈</div>
+                <div class="page-content">[朋友圈] 动态广场位置</div>
+            </div>
+
+<div id="page-xiaoxiang" class="page-view">
+    <div class="page-header">小像</div>
+    <div class="my-info-card" id="my-info-card" style="margin-top: 20px; cursor: pointer;">
+    <div class="my-avatar-container">
+        <div class="my-avatar-img" id="user-avatar"></div>
+        <div class="avatar-badge" id="user-badge" contenteditable="true">(๑•̀ㅂ•́)و✧</div>
+    </div>
+    <div class="my-name-text" id="user-name">锦玉</div>
+    <div class="my-sign-text" id="user-signature" contenteditable="true">一蓑烟雨任平生</div>
+</div>
+
+<input type="file" id="card-bg-upload" accept="image/*" style="display: none;">
+   <div class="module-grid">
+    <div class="grid-item" id="btn-theme-settings">
+        <svg class="grid-icon"><use xlink:href="#icon-theme"></use></svg>
+        <span class="grid-text">主题设置</span>
+    </div>
+
+    <div class="grid-item" id="btn-mask-management">
+        <svg class="grid-icon"><use xlink:href="#icon-mask"></use></svg>
+        <span class="grid-text">预设管理</span>
+    </div>
+
+    <div class="grid-item" id="btn-relation-map">
+        <svg class="grid-icon"><use xlink:href="#icon-relation"></use></svg>
+        <span class="grid-text">人物关系</span>
+    </div>
+
+    <div class="grid-item" id="btn-wallet">
+        <svg class="grid-icon"><use xlink:href="#icon-wallet"></use></svg>
+        <span class="grid-text">钱包余额</span>
+    </div>
+
+    <div class="grid-item" id="btn-notes">
+        <svg class="grid-icon"><use xlink:href="#icon-notes"></use></svg>
+        <span class="grid-text">随记录</span>
+    </div>
+
+    <div class="grid-item" id="btn-outfit">
+        <svg class="grid-icon"><use xlink:href="#icon-outfit"></use></svg>
+        <span class="grid-text">今日穿搭</span>
+    </div>
+</div>
+
+</div>
+            
+
+           <div class="bottom-nav">
+    <div class="nav-item" data-target="page-chuanshu">
+        <svg class="nav-icon"><use xlink:href="#icon-chuanshu"></use></svg>
+        <div>传书</div>
+    </div>
+    
+    <div class="nav-item" data-target="page-gujiao">
+        <svg class="nav-icon"><use xlink:href="#icon-gujiao"></use></svg>
+        <div>故交</div>
+    </div>
+    
+    <div class="nav-item" data-target="page-pengyouquan">
+        <svg class="nav-icon"><use xlink:href="#icon-pengyouquan"></use></svg>
+        <div>朋友圈</div>
+    </div>
+    
+    <div class="nav-item active" data-target="page-xiaoxiang">
+        <svg class="nav-icon"><use xlink:href="#icon-xiaoxiang"></use></svg>
+        <div>小像</div>
+    </div>
+</div>
+</div>
+
+        <div id="theme-settings-overlay" class="page-overlay" style="display: none;">
+            <div class="overlay-header">
+                <button class="back-btn" data-target="theme-settings-overlay">返回</button>
+                <button class="preset-capsule-btn">主题设置</button>
+            </div>
+            <div class="overlay-content">
+                <div class="section-label">四季主题</div>
+                <div class="season-row">
+                    <div class="season-chip season-spring" data-theme="spring">春</div>
+                    <div class="season-chip season-summer" data-theme="summer">夏</div>
+                    <div class="season-chip season-autumn active" data-theme="autumn">秋</div>
+                    <div class="season-chip season-winter" data-theme="winter">冬</div>
+                </div>
+
+                <div class="section-label">我的预设</div>
+                <div class="preset-list" id="theme-preset-list">
+                    <div class="preset-empty">还没有预设，去下方调色吧</div>
+                </div>
+
+                <div class="section-label">自定义调色</div>
+                <div class="color-mixer" id="color-mixer">
+                    <div class="mixer-preview-row">
+                        <div class="mixer-preview" id="mixer-preview"></div>
+                        <div class="mixer-info">
+                            <input type="text" class="mixer-hex-input" id="mixer-hex-input" value="#FDFCF5" maxlength="7">
+                            <div class="mixer-rgb" id="mixer-rgb">RGB(253, 252, 245)</div>
+                        </div>
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label"><span>R</span><span id="r-val">253</span></div>
+                        <input type="range" min="0" max="255" value="253" class="color-slider slider-r" id="slider-r">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label"><span>G</span><span id="g-val">252</span></div>
+                        <input type="range" min="0" max="255" value="252" class="color-slider slider-g" id="slider-g">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label"><span>B</span><span id="b-val">245</span></div>
+                        <input type="range" min="0" max="255" value="245" class="color-slider slider-b" id="slider-b">
+                    </div>
+                    <div class="mixer-actions">
+                        <button class="mixer-btn" id="apply-color-btn">应用此颜色</button>
+                        <button class="mixer-btn primary" id="save-preset-btn">存为预设</button>
+                    </div>
+                    <div class="save-preset-row" id="save-preset-row">
+                        <input type="text" class="save-preset-input" id="save-preset-input" placeholder="给这个颜色取个名字...">
+                        <button class="save-preset-confirm" id="save-preset-confirm">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="preset-edit-overlay" class="center-overlay">
+            <div class="center-card">
+                <div class="center-card-title">编辑预设</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <input type="text" id="preset-edit-name" class="inline-edit-input" style="font-size:0.9rem;width:100%;box-sizing:border-box;" placeholder="预设名称">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div id="preset-edit-dot" style="width:24px;height:24px;border-radius:50%;border:1px solid rgba(0,0,0,0.1);flex-shrink:0;"></div>
+                        <div id="preset-edit-hex" style="font-family:monospace;font-size:0.85rem;color:#5d4037;flex:1;"></div>
+                        <button id="preset-copy-btn" style="height:28px;padding:0 10px;border-radius:6px;border:1px solid var(--theme-border);background:rgba(255,255,255,0.5);font-family:inherit;font-size:0.75rem;color:var(--text-dark);cursor:pointer;">复制</button>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button id="preset-edit-save" style="flex:1;height:34px;border-radius:8px;border:1px solid var(--theme-border);background:rgba(255,255,255,0.5);font-family:inherit;font-size:0.8rem;color:var(--text-dark);cursor:pointer;font-weight:bold;">保存</button>
+                        <button id="preset-edit-cancel" style="flex:1;height:34px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.5);font-family:inherit;font-size:0.8rem;color:#999;cursor:pointer;">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div id="preset-manager-overlay" class="page-overlay" style="display: none; overflow: hidden;">
+            <div class="overlay-header preset-header">
+                <button class="back-btn" data-target="preset-manager-overlay">返回</button>
+                <button class="preset-capsule-btn">预设管理</button>
+            </div>
+            <div class="preset-page" style="flex: 1; position: relative;">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索档案">
+                </div>
+                <div class="envelope-list" id="envelopeList"></div>
+                <button class="fab-add" id="addBtn">+</button>
+            </div>
+        </div>
+
+        <div class="edit-page" id="editPage">
+            <div class="edit-header">
+                <button id="closeEditBtn">归还</button>
+                <h3 id="editTitle">撰写机密</h3>
+                <button id="saveEditBtn">封存</button>
+            </div>
+            <div class="edit-body">
+                <div class="profile-row">
+                    <div class="avatar-area">
+                        <canvas id="editAvatarCanvas" width="76" height="76" class="avatar-canvas"></canvas>
+                        <div class="avatar-buttons">
+                            <button id="uploadAvatarBtn">替换</button>
+                            <button id="resetAvatarBtn">洗净</button>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" class="file-input">
+                    </div>
+                    <div class="info-area">
+                        <div class="field">
+                            <label>称呼</label>
+                            <input type="text" id="editName" value="">
+                        </div>
+                        <div class="field">
+                            <label>简短身份</label>
+                            <input type="text" id="editRole" value="">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="theme-section">
+                    <div class="theme-label">印记色彩</div>
+                    <div class="color-row" id="colorPalette">
+                        <div class="color-swatch" data-color="#7eb6ce" style="background-color: #7eb6ce;"></div>
+                        <div class="color-swatch" data-color="#f3dde4" style="background-color: #f3dde4;"></div>
+                        <div class="color-swatch" data-color="#ddf3e1" style="background-color: #ddf3e1;"></div>
+                        <div class="color-swatch" data-color="#fef8cd" style="background-color: #fef8cd;"></div>
+                        <div class="color-swatch" data-color="#e8c5f7" style="background-color: #e8c5f7;"></div>
+                        <div class="color-swatch" data-color="#f8f4e3" style="background-color: #f8f4e3;"></div>
+                        <div class="color-swatch" data-color="#d2ffcc" style="background-color: #d2ffcc;"></div>
+                    </div>
+                    <div class="color-hex">
+                        <span>色值</span>
+                        <input type="text" id="editColor" value="" maxlength="7">
+                    </div>
+                </div>
+
+                <div class="secret-section">
+                    <div class="secret-label">档案纪实</div>
+                    <textarea id="editRawText" class="secret-textarea" rows="4"></textarea>
+                    <div class="file-import" id="importTxtBtn">导入旧卷 (.txt)</div>
+                    <input type="file" id="txtFileInput" accept=".txt" class="file-input">
+                </div>
+            </div>
+        </div>
+
+        <div id="customModal" class="custom-modal-overlay">
+            <div class="custom-modal-box">
+                <div class="custom-modal-title" id="modalTitle"></div>
+                <div class="custom-modal-msg" id="modalMessage"></div>
+                <div class="custom-modal-actions">
+                    <button class="custom-modal-btn custom-modal-cancel" id="modalBtnCancel">暂缓</button>
+                    <button class="custom-modal-btn custom-modal-confirm" id="modalBtnConfirm">确信</button>
+                </div>
+            </div>
+        </div>
+
+       <div id="relation-map-overlay" class="page-overlay" style="display: none;">
+<div class="overlay-header">
+    <button class="back-btn" data-target="relation-map-overlay">返回</button>
+    <button class="preset-capsule-btn">人物关系</button>
+</div>
+
+    <div class="bubble-canvas" id="bubble-canvas">
+        <!-- 我的气泡 - 居中，不可编辑 -->
+        <div class="bubble" id="bubble-me" style="width: 110px; height: 110px; left: 105px; top: 265px; background-color: var(--bubble-self); animation: float1 9s ease-in-out infinite; z-index: 10;">
+            <div class="bubble-name">我</div>
+        </div>
+
+        <!-- 加号按钮 -->
+        <div class="fab-add" id="fab-add">+</div>
+    </div>
+
+    <!-- 半抽屉弹窗 -->
+    <div class="sheet-mask" id="sheet-mask"></div>
+    <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-drag"></div>
+        <div class="form-row">
+            <div class="form-item">
+                <div class="form-label">称谓</div>
+                <input type="text" class="form-input" id="input-name" placeholder="人物名">
+            </div>
+            <div class="form-item">
+                <div class="form-label">身份</div>
+                <input type="text" class="form-input" id="input-role" placeholder="如：室友">
+            </div>
+        </div>
+        <div class="form-row" style="flex-direction: column;">
+            <div class="form-label">归属</div>
+            <div class="chip-group" id="group-chip-group">
+                <div class="chip" data-group="campus">校园</div>
+                <div class="chip" data-group="work">职场</div>
+                <div class="chip" data-group="family">家人</div>
+                <div class="chip selected" data-group="other">其他</div>
+            </div>
+        </div>
+        <div class="form-row" style="flex-direction: column;">
+            <div class="form-label">羁绊状态</div>
+            <div class="chip-group" id="type-chip-group">
+                <div class="chip selected" data-type="npc">普通NPC</div>
+                <div class="chip" data-type="fish">故交小鱼</div>
+            </div>
+        </div>
+        <div class="form-row" style="flex-direction: column; margin-bottom: 0;">
+            <div class="form-label">纪实</div>
+            <textarea class="form-textarea" id="input-notes" placeholder="记录些什么..."></textarea>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-secondary" id="btn-delete">抹除</button>
+            <button class="btn btn-primary" id="btn-save">封存</button>
+        </div>
+    </div>
+</div>
+<div id="wallet-overlay" class="page-overlay" style="display: none;">
+    <div class="overlay-header">
+        <button class="back-btn" data-target="wallet-overlay">返回</button>
+        <button class="preset-capsule-btn">钱包余额</button>
+    </div>
+    <div class="overlay-content" style="padding: 0 14px 24px 14px;">
+        
+        <!-- 卡片区 完全复刻2.html -->
+        <div class="card-wrapper" style="position: relative; margin-top: 52px;">
+            <svg class="lines-svg" viewBox="0 0 360 34" preserveAspectRatio="none" style="position: absolute; top: -34px; left: 0; width: 100%; height: 34px; pointer-events: none; z-index: 2;">
+                <line x1="180" y1="0" x2="0" y2="34" stroke="#C9BEA0" stroke-width="2" />
+                <line x1="180" y1="0" x2="360" y2="34" stroke="#C9BEA0" stroke-width="2" />
+            </svg>
+            <div class="nail" style="position: absolute; top: -42px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: radial-gradient(circle at 30% 30%, #E9DDC5, #BCAC85); border-radius: 50%; box-shadow: 0 2px 5px rgba(80,60,30,0.3), inset 0 1px 0 rgba(255,250,210,0.8); z-index: 3; pointer-events: none; border: 0.5px solid rgba(130,100,60,0.35);"></div>
+            <div class="balance-card" style="width: 100%; background: linear-gradient(145deg, #FEFAF2 0%, #FFFFFF 100%); padding: 20px 14px 22px; position: relative; box-shadow: 0 12px 28px rgba(0,0,0,0.04), 0 0 0 1px rgba(210,195,165,0.3) inset, 0 0 0 2px rgba(255,250,240,0.7) inset; border-radius: 0px;">
+                <div class="corner-tl" style="position: absolute; top: 10px; left: 10px; border-top: 2px solid #D6C8AC; border-left: 2px solid #D6C8AC; width: 16px; height: 16px;"></div>
+                <div class="corner-tr" style="position: absolute; top: 10px; right: 10px; border-top: 2px solid #D6C8AC; border-right: 2px solid #D6C8AC; width: 16px; height: 16px;"></div>
+                <div class="corner-bl" style="position: absolute; bottom: 10px; left: 10px; border-bottom: 2px solid #D6C8AC; border-left: 2px solid #D6C8AC; width: 16px; height: 16px;"></div>
+                <div class="corner-br" style="position: absolute; bottom: 10px; right: 10px; border-bottom: 2px solid #D6C8AC; border-right: 2px solid #D6C8AC; width: 16px; height: 16px;"></div>
+                <div class="balance-label" style="font-size: 11px; color: #B9A87F; text-align: center; letter-spacing: 3px; margin-bottom: 8px;">锦玉</div>
+                <div class="balance-number" style="font-size: 40px; font-weight: 500; color: #4F4538; text-align: center; margin: 4px 0 2px;">¥ <span id="wallet-balance-num">0</span><small style="font-size: 15px; color: #B8A77D;">元</small></div>
+               <div class="center-text" style="text-align: center;"><span class="today-delta" id="wallet-delta-text" style="font-size: 10px; background: rgba(200,182,145,0.22); display: inline-block; margin: 8px auto 4px; padding: 4px 16px; border-radius: 30px; color: #9B8B6C;">今日 +0 元</span></div>
+            </div>
+        </div>
+
+        <!-- 团扇转盘 完全复刻2.html -->
+        <div class="wheel-container" style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 28px 0 32px 0;">
+            <div class="wheel-box" style="width: 140px; height: 162px; position: relative;">
+                <div class="wheel-pointer" style="position: absolute; left: 50%; top: -5px; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 14px solid #E0CDB0; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.08)); z-index: 10;"></div>
+                <div class="wheel" id="wallet-wheel" style="width: 126px; height: 126px; margin: 0 auto; transition: transform 1.5s cubic-bezier(0.23,0.82,0.32,1); position: relative; top: 8px;">
+                    <div class="wheel-shape" style="width: 100%; height: 100%; background: radial-gradient(circle at center, #FDF5E6, #FFFFFF); border-radius: 50%; box-shadow: 0 6px 16px rgba(0,0,0,0.04), 0 0 0 1px #eee3d2 inset;"></div>
+                    <div class="fan-handle" style="position: absolute; bottom: -48px; left: 50%; transform: translateX(-50%); width: 10px; height: 46px; background: linear-gradient(90deg, #E0CDB0, #D4C0A0, #E0CDB0); border-radius: 0 0 6px 6px; z-index: 1;"></div>
+                </div>
+            </div>
+          <button class="spin-btn" id="wallet-spin-btn" style="background: #FFFFFF; border: 1px solid #E0CDB0; padding: 6px 20px; border-radius: 40px; font-size: 11px; color: #b89f76; cursor: pointer; margin-top: 20px;">团扇赐福</button>
+        </div>
+
+        <!-- 流水区 + 四个颜色点 -->
+        <div class="ledger-container" style="margin-top: 8px;">
+            <div class="filter-bar" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; padding: 6px 0 4px 0; border-bottom: 0.5px solid #EEE3D2;">
+                <div class="search-area" style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                    <input type="text" class="search-box" id="wallet-search-input" placeholder="搜备注" style="background: rgba(235,225,205,0.25); border: 0.5px solid #D9CDB5; border-radius: 28px; padding: 6px 14px; font-size: 10px; width: 100px; outline: none;">
+                    <div class="color-presets" id="walletColorPresets" style="display: flex; gap: 6px;"></div>
+                    <div class="reset-default" id="walletResetDefaultBtn" style="width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 11px; background: #F7F2E7; color: #A28F6E;" title="默认米黄"></div>
+                </div>
+                <div class="filter-group" style="display: flex; gap: 6px;">
+                    <button class="filter-capsule active" data-wallet-filter="all" style="background: rgba(235,225,205,0.3); border: 0.5px solid #D9CDB5; padding: 5px 14px; border-radius: 28px; font-size: 10px;">全部</button>
+                    <button class="filter-capsule" data-wallet-filter="spin_income" style="background: rgba(235,225,205,0.3); border: 0.5px solid #D9CDB5; padding: 5px 14px; border-radius: 28px; font-size: 10px;">抽签</button>
+                    <button class="filter-capsule" data-wallet-filter="outgoing_transfer" style="background: rgba(235,225,205,0.3); border: 0.5px solid #D9CDB5; padding: 5px 14px; border-radius: 28px; font-size: 10px;">转出</button>
+                    <button class="filter-capsule" data-wallet-filter="incoming_transfer" style="background: rgba(235,225,205,0.3); border: 0.5px solid #D9CDB5; padding: 5px 14px; border-radius: 28px; font-size: 10px;">转入</button>
+                </div>
+                <button id="btn-clear-ledger" style="background: none; border: 0.5px solid #D9CDB5; padding: 5px 10px; border-radius: 28px; font-size: 10px; color: #c0392b; cursor: pointer;">清空</button>
+            </div>
+            <div id="wallet-ledger-list" class="ledger-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+    </div>
+
+    <!-- 中奖弹窗 -->
+    <div class="lottery-mask" id="wallet-result-mask" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(80,70,55,0.5); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 1000; visibility: hidden; opacity: 0; transition: 0.2s;">
+        <div class="lottery-card" style="width: 240px; background: rgba(255,255,255,0.98); border-radius: 24px; border: 0.5px solid #E0CDB0; padding: 30px 22px 10px 16px; text-align: center;">
+            <div class="lottery-blessing" id="wallet-result-top" style="font-size: 16px; color: #E0CDB0; margin-bottom: 16px;">锦鲤附体</div>
+            <div class="lottery-amount" style="font-size: 52px; color: #5D534A;">¥ <span id="wallet-result-amount">0</span></div>
+            <div class="lottery-meaning" id="wallet-result-bottom" style="font-size: 14px; color: #9B8E82; margin: 12px 0;">两情相悦</div>
+            <button class="lottery-btn" id="wallet-result-ok" style="background: rgba(224,205,176,0.2); border: none; border-radius: 40px; padding: 10px 0; width: 100%; cursor: pointer;">收下好运</button>
+        </div>
+    </div>
+</div>
+
+        <div id="notes-overlay" class="page-overlay" style="display: none;">
+            <div class="overlay-header">
+                <button class="back-btn" data-target="notes-overlay">返回</button>
+                <button class="preset-capsule-btn">随记</button>
+            </div>
+            <div class="overlay-content">
+                <div style="text-align: center; color: #999; padding: 40px;">随记内容区域</div>
+            </div>
+        </div>
+
+        <div id="outfit-overlay" class="page-overlay" style="display: none;">
+            <div class="overlay-header">
+                <button class="back-btn" data-target="outfit-overlay">返回</button>
+                <button class="preset-capsule-btn">今日穿搭</button>
+            </div>
+            <div class="overlay-content">
+                <div style="text-align: center; color: #999; padding: 40px;">今日穿搭内容区域</div>
+            </div>
+        </div>
+
+        <div id="toast-container"></div>
+      
+
+    <input type="file" id="file-input" accept="image/*" style="display: none;">
+    <input type="file" id="emoji-file-input" accept="image/*" style="display: none;">
+
+     <svg style="display: none;">
+        <symbol id="icon-chuanshu" viewBox="0 0 100 100">
+    <path d="M50,85 Q45,55 15,45 C25,20 75,20 85,50 Q65,55 50,85" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M48,70 L25,48 M50,60 L55,30 M52,75 L75,55" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+
+    <path d="M55,88 Q55,60 90,55 C95,25 55,20 40,40 Q48,65 55,88" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M52,75 L45,45 M55,65 L75,35 M58,80 L85,60" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+
+    <path d="M50,85 Q52,92 55,88" stroke="currentColor" stroke-width="1.5" fill="none"/>
+</symbol>
+        <symbol id="icon-gujiao" viewBox="0 20 80 30">
+    <ellipse cx="22" cy="35" rx="20" ry="12" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,35 L48,28 L46,35 L48,42 Z" fill="none" stroke="currentColor" stroke-width="1"/>
+    <circle cx="10" cy="32" r="1.5" fill="currentColor"/>
+
+    <ellipse cx="48" cy="30" rx="18" ry="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M64,30 L70,24 L68,30 L70,36 Z" fill="none" stroke="currentColor" stroke-width="1"/>
+    <circle cx="38" cy="28" r="1.5" fill="currentColor"/>
+</symbol>
+        <symbol id="icon-pengyouquan" viewBox="10 15 80 65">
+    <rect x="15" y="30" width="60" height="45" fill="none" stroke="currentColor" stroke-width="1.2" rx="3"/>
+    <rect x="18" y="27" width="60" height="45" fill="none" stroke="currentColor" stroke-width="1.2" rx="3"/>
+    <rect x="21" y="24" width="60" height="45" fill="none" stroke="currentColor" stroke-width="1.2" rx="3"/>
+
+    <rect x="30" y="20" width="42" height="10" rx="2" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1"/>
+
+    <path d="M30,40 H70 M30,50 H70 M30,60 H60" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+</symbol>
+      <symbol id="icon-xiaoxiang" viewBox="0 0 80 80">
+    <path d="M40,20 C32,20 32,32 32,32 L25,72 H55 L48,32 C48,32 48,20 40,20" 
+          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <circle cx="40" cy="13" r="5.5" fill="none" stroke="currentColor" stroke-width="2.5"/>
+
+    <path d="M50,44 L64,52" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+    <path d="M64,52 V64 M60,57 H68 V64 H60 Z" fill="none" stroke="currentColor" stroke-width="1.2"/>
+</symbol>
+
+ <symbol id="icon-theme" viewBox="18 10 35 45">
+    <circle cx="35" cy="25" r="12" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    <circle cx="35" cy="25" r="8" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.8"/>
+
+    <ellipse cx="35" cy="45" rx="14" ry="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <ellipse cx="35" cy="43" rx="10" ry="4" fill="none" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+</symbol>
+
+        <symbol id="icon-mask" viewBox="5 0 50 65">
+    <rect x="10" y="5" width="40" height="55" fill="none" stroke="currentColor" stroke-width="1.8" rx="5"/>
+    
+    <line x1="10" y1="15" x2="50" y2="15" stroke="currentColor" stroke-width="0.8" opacity="0.8"/>
+    <line x1="10" y1="25" x2="50" y2="25" stroke="currentColor" stroke-width="0.8" opacity="0.8"/>
+    <line x1="10" y1="35" x2="50" y2="35" stroke="currentColor" stroke-width="0.8" opacity="0.8"/>
+    <line x1="10" y1="45" x2="50" y2="45" stroke="currentColor" stroke-width="0.8" opacity="0.8"/>
+
+    <circle cx="30" cy="10" r="1.2" fill="currentColor" opacity="1"/>
+    <circle cx="30" cy="20" r="1.2" fill="currentColor" opacity="1"/>
+    <circle cx="30" cy="30" r="1.2" fill="currentColor" opacity="1"/>
+    <circle cx="30" cy="40" r="1.2" fill="currentColor" opacity="1"/>
+    <circle cx="30" cy="50" r="1.2" fill="currentColor" opacity="1"/>
+</symbol>
+
+ 
+
+       <symbol id="icon-relation" viewBox="5 10 60 55">
+    <line x1="10" y1="15" x2="60" y2="15" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+    <line x1="10" y1="25" x2="60" y2="25" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+    <line x1="10" y1="35" x2="60" y2="35" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+    <line x1="10" y1="45" x2="60" y2="45" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+    <line x1="10" y1="55" x2="60" y2="55" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+
+    <circle cx="25" cy="25" r="1.5" fill="currentColor" opacity="1"/>
+    <circle cx="40" cy="35" r="1.5" fill="currentColor" opacity="1"/>
+    <circle cx="30" cy="45" r="1.5" fill="currentColor" opacity="1"/>
+</symbol>
+
+<symbol id="icon-wallet" viewBox="-5 -5 80 60">
+    <rect x="0" y="0" width="70" height="50" fill="none" stroke="currentColor" stroke-width="1.8" rx="4"/>
+    
+    <line x1="10" y1="20" x2="60" y2="20" stroke="currentColor" stroke-width="1.2" opacity="0.8"/>
+    <line x1="10" y1="30" x2="60" y2="30" stroke="currentColor" stroke-width="1.2" opacity="0.8"/>
+</symbol>
+        <symbol id="icon-notes" viewBox="0 0 65 65">
+    <rect x="32" y="5" width="22" height="40" fill="none" stroke="currentColor" stroke-width="1.8" rx="3"/>
+    <rect x="5" y="15" width="22" height="40" fill="none" stroke="currentColor" stroke-width="1.8" rx="3"/>
+    
+    <line x1="26" y1="18" x2="26" y2="50" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+    <line x1="34" y1="8" x2="34" y2="40" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+</symbol>
+
+      <symbol id="icon-outfit" viewBox="110 10 180 200">
+    <path d="M140,20 L260,20 L265,55 H135 Z" 
+          fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/>
+
+    <path d="M135,55 L265,55 L280,185 Q200,195 120,185 Z" 
+          fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/>
+</symbol>
+    </svg>
+
+       </div>
+
+       <script>
+// 检测是否在 iframe 中运行
+if (window.parent !== window) {
+    document.body.classList.add('in-app');
+}
+</script>
+   
+    <script src="index.js"></script>
+    <script src="router.js"></script>
+    <script src="profile.js"></script>
+    <script src="presetManager.js"></script>
+
+</body>
+</html>
+

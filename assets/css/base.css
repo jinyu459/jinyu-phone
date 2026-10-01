@@ -1,0 +1,116 @@
+/* ================= 核心规矩执行 ================= */
+* {
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+    box-sizing: border-box;
+}
+
+/* 隐藏滚动条但保持滚动 */
+::-webkit-scrollbar {
+    display: none;
+}
+html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    /* 确保任何绝对定位都不会超出屏幕 */
+    overflow-x: hidden; 
+}
+
+/* ================= 四季浮标颜色变量 ================= */
+:root, [data-theme="autumn"] {
+    --toast-bg: rgba(255,255,255,0.92);
+    --toast-text: #C4A878;
+}
+
+[data-theme="summer"] {
+    --toast-bg: rgba(255,255,255,0.92);
+    --toast-text: #BD8A8A;
+}
+
+[data-theme="winter"] {
+    --toast-bg: rgba(255,255,255,0.92);
+    --toast-text: #8FAAB8;
+}
+
+[data-theme="spring"] {
+    --toast-bg: rgba(255,255,255,0.92);
+    --toast-text: #82A896;
+}
+
+
+/* ================= 实体小浮标系统 ================= */
+.smoke-toast-mask {
+    position: absolute; 
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.15);
+    z-index: 9998; 
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.smoke-toast-mask.active { 
+    opacity: 1; pointer-events: auto; 
+}
+
+.smoke-toast {
+    position: absolute; 
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background-color: var(--toast-bg);
+    color: var(--toast-text);
+    border-radius: 10px;
+    padding: 12px 24px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255,255,255,0.6) inset;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: max-content;
+    min-width: 120px;
+    max-width: 80%;
+    text-align: center;
+}
+.smoke-toast.active {
+    opacity: 1; pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+}
+.smoke-toast.fade-out {
+    opacity: 0; transform: translate(-50%, -50%) scale(0.95);
+}
+
+.smoke-msg {
+    font-family: 'STKaiti', '楷体', serif;
+    font-size: 13px; 
+    color: inherit;
+    line-height: 1.5; 
+    margin: 0; 
+    word-break: break-all;
+    letter-spacing: 1px;
+}
+
+.smoke-toast:has(.smoke-btns) .smoke-msg {
+    margin-bottom: 15px;
+}
+
+.smoke-btns { display: flex; gap: 10px; margin-top: 10px; }
+.smoke-btn {
+    flex: 1; padding: 8px 0;
+    font-family: 'STKaiti', '楷体', serif;
+    font-size: 12px; border: none; border-radius: 6px;
+    cursor: pointer; transition: all 0.3s ease;
+}
+.smoke-btn:active { transform: scale(0.95); }
+
+.smoke-btn-cancel { 
+    background: rgba(0, 0, 0, 0.05); 
+    color: var(--toast-text); 
+}
+.smoke-btn-confirm { 
+    background: var(--toast-text); 
+    color: var(--toast-bg);
+}

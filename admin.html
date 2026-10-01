@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锦玉 · 资格码管理</title>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #c5cdd8 0%, #b8c4d0 40%, #aab8c6 100%);
+    font-family: 'STKaiti', '楷体', serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 30px 20px;
+}
+
+/* 雨丝背景 */
+body::before {
+    content: ''; position: fixed; inset: -20% -10% 0 -10%; z-index: 0; pointer-events: none;
+    background-image:
+        repeating-linear-gradient(168deg, transparent, transparent 60px, rgba(175,188,200,0.05) 60px, rgba(175,188,200,0.05) 61px),
+        repeating-linear-gradient(172deg, transparent, transparent 80px, rgba(168,182,195,0.04) 80px, rgba(168,182,195,0.04) 81px);
+    animation: rainBg 0.8s linear infinite;
+}
+@keyframes rainBg { to { transform: translateY(61px) translateX(-6px); } }
+
+.admin-wrap {
+    width: 100%; max-width: 420px;
+    position: relative; z-index: 1;
+}
+
+/* 标题区 */
+.admin-header {
+    text-align: center; margin-bottom: 30px;
+}
+.admin-title {
+    font-size: 26px; color: rgba(60,60,72,0.6);
+    letter-spacing: 8px; margin-bottom: 6px;
+}
+.admin-sub {
+    font-size: 12px; color: rgba(80,90,105,0.35);
+    letter-spacing: 3px;
+}
+
+/* 统计卡片 */
+.stats-card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.stats-label {
+    font-size: 13px; color: rgba(60,65,75,0.4);
+    letter-spacing: 2px; margin-bottom: 8px;
+}
+.stats-num {
+    font-size: 36px; color: rgba(60,60,72,0.55);
+    font-weight: normal; letter-spacing: 5px;
+}
+.stats-detail {
+    margin-top: 10px;
+    display: flex; justify-content: center; gap: 20px;
+}
+.stats-item {
+    font-size: 11px; color: rgba(80,90,105,0.35);
+    letter-spacing: 1px;
+}
+.stats-item span {
+    color: rgba(60,60,72,0.5);
+    font-size: 14px;
+}
+
+/* 生成按钮 */
+.btn-gen {
+    width: 100%;
+    padding: 14px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    font-size: 14px;
+    color: rgba(60,60,72,0.5);
+    letter-spacing: 4px;
+    font-family: 'STKaiti', '楷体', serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 25px;
+}
+.btn-gen:active {
+    transform: scale(0.98);
+    background: rgba(255,255,255,0.2);
+}
+
+/* 码列表 */
+.list-header {
+    font-size: 12px; color: rgba(80,90,105,0.3);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    padding-left: 5px;
+}
+.code-list {
+    max-height: 380px; overflow-y: auto;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.code-list::-webkit-scrollbar { width: 3px; }
+.code-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+.code-item {
+    padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: background 0.2s;
+}
+.code-item:last-child { border-bottom: none; }
+.code-item:active { background: rgba(255,255,255,0.05); }
+
+.code-info { display: flex; flex-direction: column; gap: 3px; }
+.code-text {
+    font-size: 13px; color: rgba(60,60,72,0.55);
+    letter-spacing: 1px; font-family: monospace;
+}
+.code-status {
+    font-size: 10px; letter-spacing: 1px;
+}
+.code-status.unused { color: rgba(100,140,110,0.5); }
+.code-status.used { color: rgba(160,100,100,0.45); }
+
+.btn-copy {
+    padding: 5px 14px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    font-size: 11px;
+    color: rgba(60,60,72,0.4);
+    font-family: 'STKaiti', '楷体', serif;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+.btn-copy:active {
+    background: rgba(255,255,255,0.2);
+    transform: scale(0.95);
+}
+
+.empty-text {
+    padding: 30px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(80,90,105,0.25);
+    letter-spacing: 2px;
+}
+
+/* 底部 */
+.admin-footer {
+    margin-top: 25px;
+    font-size: 10px;
+    color: rgba(170,180,195,0.25);
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+/* 提示 */
+.toast {
+    position: fixed; top: -50px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.25);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 10px 24px; border-radius: 20px;
+    color: rgba(60,60,72,0.6); font-size: 13px;
+    transition: top 0.4s, opacity 0.4s;
+    opacity: 0; z-index: 100; letter-spacing: 1px;
+}
+.toast.show { top: 30px; opacity: 1; }
+    </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="admin-wrap">
+    <div class="admin-header">
+        <div class="admin-title">资 格 码</div>
+        <div class="admin-sub">锦玉小手机 · 管理</div>
+    </div>
+
+    <div class="stats-card">
+        <div class="stats-label">码 库 总 量</div>
+        <div class="stats-num" id="totalCodes">0</div>
+        <div class="stats-detail">
+            <div class="stats-item">未用 <span id="unusedCount">0</span></div>
+            <div class="stats-item">已用 <span id="usedCount">0</span></div>
+        </div>
+    </div>
+
+    <button class="btn-gen" onclick="generateCodes()">生 成 五 枚</button>
+
+    <button class="btn-gen" onclick="clearOldCodes()" style="background:rgba(180,140,140,0.12);color:rgba(160,100,100,0.5);font-size:12px;padding:10px;margin-bottom:15px;">清 除 旧 码 库</button>
+    <div class="list-header">码 库</div>
+    <div class="code-list" id="codeListContainer"></div>
+</div>
+
+<div class="admin-footer">二零二六载 · 锦玉小手机</div>
+
+<script>
+// ============ admin.js 内联（美化版） ============
+var STORAGE_KEY = 'jy_qualification_codes_v2';
+
+function loadCodes() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch(e) { return []; }
+}
+
+function saveCodes(codes) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
+    renderAll(codes);
+}
+
+function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2000);
+}
+
+function jySign(body) {
+    var key = 'JINYU2026';
+    var hash = 0;
+    for (var i = 0; i < body.length; i++) hash = ((hash << 5) - hash + body.charCodeAt(i)) & 0xFFFFFF;
+    for (var i = 0; i < key.length; i++) hash = ((hash << 5) - hash + key.charCodeAt(i)) & 0xFFFFFF;
+    var c = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    return c[hash % c.length] + c[Math.floor(hash / c.length) % c.length];
+}
+
+function generateCodes() {
+    var codes = loadCodes();
+    for (var i = 0; i < 5; i++) {
+        var r = Math.random().toString(36).substr(2, 4).toUpperCase();
+        var t = Date.now().toString(36).substr(-4).toUpperCase();
+        var body = 'JY' + t + '-' + r;
+        codes.push({
+            code: body + jySign(body),
+            used: false,
+            usedBy: null,
+            created: new Date().toISOString()
+        });
+    }
+    saveCodes(codes);
+    showToast('已生成五枚');
+}
+
+function copyCode(code) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code).then(function() {
+            showToast('已复制');
+        }).catch(function() { fallbackCopy(code); });
+    } else {
+        fallbackCopy(code);
+    }
+}
+
+function fallbackCopy(code) {
+    var ta = document.createElement('input');
+    ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.readOnly = true; ta.focus(); ta.select(); ta.setSelectionRange(0, 9999);
+    try { document.execCommand('copy'); showToast('已复制'); } 
+    catch(e) { showToast('复制失败，请手动复制'); }
+    document.body.removeChild(ta);
+}
+
+
+function clearOldCodes() {
+    var codes = loadCodes();
+    // 只保留有deviceId的（即一机一码生成的），删掉旧批量码
+    var newCodes = codes.filter(function(c) { return c.deviceId; });
+    saveCodes(newCodes);
+    showToast('旧码已清除');
+}
+
+function writeOff(code) {
+    var codes = loadCodes();
+    var item = codes.find(function(c) { return c.code === code; });
+    if (item) {
+        item.used = true;
+        item.usedAt = new Date().toISOString();
+        saveCodes(codes);
+        showToast('已核销');
+    }
+}
+
+function renderAll(codes) {
+    if (!codes) codes = loadCodes();
+    var total = codes.length;
+    var used = codes.filter(function(c){ return c.used; }).length;
+    var unused = total - used;
+
+    document.getElementById('totalCodes').textContent = total;
+    document.getElementById('unusedCount').textContent = unused;
+    document.getElementById('usedCount').textContent = used;
+
+    var container = document.getElementById('codeListContainer');
+    if (total === 0) {
+        container.innerHTML = '<div class="empty-text">空空如也</div>';
+        return;
+    }
+
+    var html = '';
+    var sorted = codes.slice().reverse();
+    sorted.forEach(function(item) {
+        var statusClass = item.used ? 'used' : 'unused';
+        var statusText = item.used ? '已使用' : '未使用';
+        html += '<div class="code-item">' +
+            '<div class="code-info">' +
+                '<div class="code-text">' + item.code + '</div>' +
+                '<div class="code-status ' + statusClass + '">' + statusText + (item.deviceId ? ' · ' + item.deviceId : '') + '</div>' +
+            '</div>' +
+            '<button class="btn-copy" onclick="copyCode(\'' + item.code + '\')">复制</button>' +
+            (item.used ? '<button class="btn-copy" style="opacity:0.4;" disabled>已核销</button>' : '<button class="btn-copy" onclick="writeOff(\'' + item.code + '\')">核销</button>') +
+        '</div>';
+
+    });
+    container.innerHTML = html;
+}
+
+// 初始化
+renderAll();
+</script>
+</body>
+</html>

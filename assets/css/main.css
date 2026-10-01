@@ -1,0 +1,633 @@
+* {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+
+/* ============ 主题变量定义 ============ */
+:root, [data-theme="spring"] {
+    --bg-color: #E8F0EE;
+    --widget-bg: rgba(255, 255, 255, 0.35);
+    --widget-line: rgba(255, 255, 255, 0.6);
+    --theme-blob: #C1D5C0;
+    --theme-accent: #A8BDB5;
+    --text-color: #2e4a3d;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --icon-size: 60px;
+    --icon-radius: 15px;
+}
+[data-theme="summer"] {
+--bg-color: #F9EBED;
+    --widget-bg: rgba(255, 255, 255, 0.35);
+    --widget-line: rgba(255, 255, 255, 0.6);
+    --theme-blob: #EAC7CC;
+    --theme-accent: #BD8A8A;
+    --text-color: #3A2F2F;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+}
+[data-theme="autumn"] {
+    --bg-color: #FDF5E6;
+    --widget-bg: rgba(255, 255, 255, 0.35);
+    --widget-line: rgba(255, 255, 255, 0.6);
+    --theme-blob: #EAD7B1;
+    --theme-accent: #D4A5A5;
+    --text-color: #5a371e;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+}
+[data-theme="winter"] {
+    --bg-color: #E8F1F5;
+    --widget-bg: rgba(255, 255, 255, 0.35);
+    --widget-line: rgba(255, 255, 255, 0.6);
+    --theme-blob: #B9CAD4;
+    --theme-accent: #8FAAB8;
+    --text-color: #1e375a;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+}
+
+
+/* ============ CSS 样式部分 ============ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #dcdcdc; font-family: sans-serif; }
+
+/* ============ 字体变量定义 ============ */
+body[data-font="default"] {
+    font-family: sans-serif;
+}
+body[data-font="kaiti"] {
+    font-family: "KaiTi", "楷体", serif;
+}
+body[data-font="songti"] {
+    font-family: "SimSun", "宋体", serif;
+}
+
+.phone-container {
+    width: 390px;
+    height: 780px;
+    background-color: var(--bg-color);
+    border-radius: 40px;
+    border: 8px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 屏幕主区域 (新增壁纸背景属性) */
+.screen-area {
+    flex: 1;
+    position: relative;
+    background-color: var(--bg-color);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    transition: background-color 0.5s ease, background-image 0.5s ease;
+}
+
+/* ============ 壁纸类名定义 ============ */
+.screen-area.wallpaper-default {
+    background-image: none;
+}
+
+
+
+
+/* 桌面滑动层 */
+.desktop {
+    display: flex;
+    width: 200%;
+    height: 100%;
+    transition: transform 0.3s ease-in-out;
+    position: relative;
+}
+
+/* 单个主屏 */
+.home-screen {
+    width: 50%;
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 小组件及图标样式 */
+.widget-window { 
+    position: absolute; 
+    left: 20px;
+    top: 20px;
+    width: 350px; 
+    height: 150px; 
+    background: var(--glass-bg); 
+    border-radius: 15px; 
+    perspective: 800px; 
+    touch-action: none;
+    z-index: 20; 
+}
+
+
+
+/* 时间显示区域 */
+.time-display {
+    position: absolute;
+    top: 160px; 
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+    color: var(--text-color);
+    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+    cursor: pointer;
+    user-select: none;
+    letter-spacing: 2px;
+    opacity: 0;
+    pointer-events: none; 
+    transition: opacity 0.5s ease-in-out;
+    z-index: 10;
+}
+
+#winSys.open #timeDisplay {
+    opacity: 1;
+    pointer-events: auto; 
+}
+
+/* 图标网格容器 */
+.icon-grid { 
+    position: absolute; 
+    left: 20px; 
+    top: 250px; 
+    width: 350px; 
+    height: calc(100% - 250px); 
+}
+.mt-20 { top: 20px; height: 100%; }
+
+/* 图标包裹器样式 — 现在使用 CSS 变量 */
+.icon { 
+    width: var(--icon-size); 
+    height: calc(var(--icon-size) + 20px);
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    cursor: pointer; 
+    user-select: none; 
+    position: absolute; 
+    touch-action: none;
+    z-index: 15;
+    transition: left 0.3s ease, top 0.3s ease, width 0.25s ease, height 0.25s ease;
+}
+
+/* 图标方块样式 — 使用 CSS 变量 */
+.icon-box {
+    width: var(--icon-size); 
+    height: var(--icon-size); 
+    background: var(--glass-bg); 
+    border-radius: var(--icon-radius); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    color: transparent; /* 核心修改：将文字设置为完全透明，保留占位但不显示 */
+    font-size: 14px; 
+    transition: width 0.25s ease, height 0.25s ease, border-radius 0.25s ease;
+}
+
+
+/* ============ 新增：各图标默认背景图（统一替换为半透明玻璃渐变） ============ */
+#icon-chat .icon-box {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+}
+#icon-setting .icon-box {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+}
+#icon-music .icon-box {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+}
+
+#icon-theme .icon-box {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+}
+#icon-worldbook .icon-box {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+}
+#icon-online .icon-box {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+}
+#icon-farm .icon-box {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+}
+#icon-study .icon-box {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+}
+
+
+/* ============ 新增：自定义图片覆盖样式 ============ */
+.icon-box.has-custom-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: transparent;
+}
+
+/* 图标文字标签样式 */
+.icon-name {
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--text-color);
+    text-shadow: 0 0 5px rgba(255,255,255,0.5);
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+}
+
+/* 隐藏名称的状态类 */
+.hide-names .icon-name {
+    opacity: 0;
+}
+
+/* ═══════ 四季花窗系统 ═══════ */
+.window-frame { position: absolute; z-index: 5; display: none; }
+.top-frame    { top: 0; left: 0; right: 0; }
+.bottom-frame { bottom: 0; left: 0; right: 0; }
+.left-frame   { top: 0; bottom: 0; left: 0; }
+.right-frame  { top: 0; bottom: 0; right: 0; }
+.frost-edge   { position: absolute; z-index: 6; pointer-events: none; display: none; }
+.trigger-box  { position: absolute; z-index: 50; cursor: pointer; display: none; }
+
+.page {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 10;
+    overflow: hidden;
+}
+.page::after {
+    content: ''; position: absolute; inset: 0;
+    z-index: 2; pointer-events: none;
+}
+
+/* ─── 🌸 春：花枝雨帘 ─── */
+
+/* 春：花枝挂杆（显示top-frame位置） */
+[data-theme="spring"] .window-frame.top-frame {
+    display: block;
+    height: 20px;
+    background: transparent;
+    z-index: 15;
+}
+
+/* 枝干 */
+[data-theme="spring"] .window-frame.top-frame::before {
+    content: '';
+    position: absolute;
+    top: 10px; left: 15px; right: 15px; height: 3px;
+    background: #8a7a5a;
+    border-radius: 2px;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+/* 春：帘面（雨丝纹 + 花瓣 + 水珠） */
+[data-theme="spring"] .page {
+    top: 18px; left: 22px; right: 22px; bottom: 15px;
+    background: rgba(255,255,255,0.88);
+    /* 竖向雨丝 */
+    background-image: repeating-linear-gradient(
+        to right, transparent, transparent 6px,
+        rgba(138,154,146,0.07) 6px, rgba(138,154,146,0.07) 6.5px
+    );
+    border: none;
+    border-radius: 0 0 8px 8px;
+    border-bottom: 1px solid rgba(168,196,160,0.2);
+    transform-origin: top center;
+    transition: transform 1s cubic-bezier(0.25, 0.1, 0.25, 1.2), opacity 0.8s;
+}
+
+/* 花瓣 + 水珠散落覆层 */
+[data-theme="spring"] .page::after {
+    display: block;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='100'%3E%3Cellipse cx='25' cy='22' rx='5' ry='7' fill='rgba(193,213,192,0.1)' transform='rotate(-30 25 22)'/%3E%3Cellipse cx='85' cy='40' rx='4' ry='6' fill='rgba(220,185,185,0.08)' transform='rotate(25 85 40)'/%3E%3Cellipse cx='50' cy='75' rx='5' ry='7' fill='rgba(193,213,192,0.08)' transform='rotate(-45 50 75)'/%3E%3Ccircle cx='18' cy='50' r='2' fill='rgba(138,154,146,0.1)'/%3E%3Ccircle cx='70' cy='18' r='1.5' fill='rgba(138,154,146,0.09)'/%3E%3Ccircle cx='95' cy='70' r='2' fill='rgba(138,154,146,0.07)'/%3E%3Ccircle cx='40' cy='45' r='1.5' fill='rgba(138,154,146,0.08)'/%3E%3Ccircle cx='75' cy='85' r='1' fill='rgba(138,154,146,0.09)'/%3E%3C/svg%3E");
+    background-size: 120px 100px;
+    pointer-events: none;
+}
+
+[data-theme="spring"] #winSys.open .page {
+    transform: rotateX(-55deg) skewX(-4deg) translateY(-5px);
+    opacity: 0.35;
+}
+
+/* 春触发器：流苏玉坠 */
+[data-theme="spring"] .trigger-spring {
+    display: flex; flex-direction: column; align-items: center;
+    bottom: -8px; right: 22px;
+    transition: transform 0.6s, opacity 0.5s;
+}
+[data-theme="spring"] #winSys.open .trigger-spring {
+    transform: translateY(-25px) rotate(-12deg); opacity: 0.4;
+}
+.tassel-thread { width: 1px; height: 12px; background: var(--theme-accent); }
+.tassel-jade { width: 6px; height: 6px; background: rgba(255,255,255,0.9); border: 1px solid var(--theme-accent); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.tassel-tail { width: 4px; height: 16px; margin-top: 2px; background: var(--theme-accent); border-radius: 2px; opacity: 0.65; }
+
+/* 花苞装饰 */
+.spring-bud { position: absolute; display: none; z-index: 16; }
+[data-theme="spring"] .spring-bud { display: block; }
+
+[data-theme="spring"] .bud-1 {
+    top: 2px; left: 28%;
+    width: 8px; height: 8px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 50%;
+    box-shadow: 2px 1px 0 -0.5px var(--theme-blob), -2px 1px 0 -0.5px var(--theme-blob), 0 3px 0 -1px var(--theme-blob);
+}
+[data-theme="spring"] .bud-2 {
+    top: 4px; right: 22%;
+    width: 6px; height: 6px;
+    background: rgba(255,220,220,0.7);
+    border-radius: 50%;
+    box-shadow: 2px 1px 0 -0.5px rgba(200,160,160,0.4);
+}
+[data-theme="spring"] .bud-3 {
+    top: 1px; left: 55%;
+    width: 4px; height: 6px;
+    background: var(--theme-blob);
+    border-radius: 50% 50% 30% 30%;
+    opacity: 0.7;
+}
+
+
+/* ─── 🍃 夏：竹帘半卷 ─── */
+[data-theme="summer"] .window-frame.top-frame {
+    display: block; height: 7px;
+    background: linear-gradient(to bottom, #c4a8a0, #a08080, #8a6a68);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+[data-theme="summer"] .page {
+    top: 5px; left: 8px; right: 8px; bottom: 8px;
+    background-color: rgba(240, 225, 220, 0.5);
+    background-image: repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(180,150,148,0.25) 2px, rgba(180,150,148,0.25) 3px);
+    border: none;
+    border-left: 1px solid rgba(180,150,148,0.2);
+    border-right: 1px solid rgba(180,150,148,0.2);
+    transform-origin: top center;
+    transition: transform 0.8s ease-in-out, opacity 0.5s;
+}
+[data-theme="summer"] .page::after { display: none; }
+[data-theme="summer"] #winSys.open .page { transform: scaleY(0.12); opacity: 0.7; }
+[data-theme="summer"] .trigger-summer {
+    display: flex; flex-direction: column; align-items: center;
+    bottom: -12px; right: 22px;
+    transition: transform 0.8s ease-in-out;
+}
+[data-theme="summer"] #winSys.open .trigger-summer { transform: translateY(-115px); }
+.rope-line { width: 2px; height: 25px; background: var(--theme-accent); opacity: 0.8; }
+.rope-knot { width: 8px; height: 8px; background: var(--theme-accent); border-radius: 2px; transform: rotate(45deg); }
+.rope-tail { width: 2px; height: 12px; margin-top: 2px; background: var(--theme-accent); opacity: 0.5; }
+
+/* ─── 🍁 秋：榫卯古木 + 落花流水 ─── */
+[data-theme="autumn"] .window-frame { display: block; }
+[data-theme="autumn"] .window-frame.top-frame {
+    height: 12px; background: #6d5535;
+    box-shadow: inset 0 2px 0 rgba(255,210,160,0.15), inset 0 -2px 3px rgba(0,0,0,0.25);
+    background-image: linear-gradient(to bottom, rgba(255,220,170,0.12) 0%, transparent 20%, transparent 40%, rgba(0,0,0,0.08) 50%, transparent 60%, rgba(255,220,170,0.08) 100%);
+}
+[data-theme="autumn"] .window-frame.bottom-frame {
+    height: 12px; background: #6d5535;
+    box-shadow: inset 0 -2px 0 rgba(255,210,160,0.1), inset 0 2px 3px rgba(0,0,0,0.2);
+    background-image: linear-gradient(to top, rgba(255,220,170,0.12) 0%, transparent 20%, transparent 40%, rgba(0,0,0,0.08) 50%, transparent 60%, rgba(255,220,170,0.08) 100%);
+}
+[data-theme="autumn"] .window-frame.left-frame {
+    width: 12px; background: #72593a;
+    box-shadow: inset 2px 0 0 rgba(255,210,160,0.12), inset -2px 0 3px rgba(0,0,0,0.2);
+    background-image: linear-gradient(to right, rgba(255,220,170,0.1) 0%, transparent 25%, transparent 40%, rgba(0,0,0,0.06) 50%, transparent 60%, rgba(255,220,170,0.06) 100%);
+}
+[data-theme="autumn"] .window-frame.right-frame {
+    width: 12px; background: #72593a;
+    box-shadow: inset -2px 0 0 rgba(255,210,160,0.1), inset 2px 0 3px rgba(0,0,0,0.2);
+    background-image: linear-gradient(to left, rgba(255,220,170,0.1) 0%, transparent 25%, transparent 40%, rgba(0,0,0,0.06) 50%, transparent 60%, rgba(255,220,170,0.06) 100%);
+}
+[data-theme="autumn"] .page {
+    top: 12px; left: 12px; right: 12px; bottom: 12px;
+    background-color: rgba(248,242,230,0.75);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='80'%3E%3Cpath d='M0 60 C25 55 40 65 60 58 C80 52 90 62 100 55' fill='none' stroke='rgba(131,110,88,0.09)' stroke-width='1'/%3E%3Cpath d='M0 75 C30 68 50 78 75 70 C90 66 95 72 100 70' fill='none' stroke='rgba(131,110,88,0.07)' stroke-width='1'/%3E%3Cellipse cx='25' cy='20' rx='4' ry='6' fill='rgba(131,110,88,0.07)' transform='rotate(-30 25 20)'/%3E%3Cellipse cx='60' cy='30' rx='3' ry='5' fill='rgba(131,110,88,0.06)' transform='rotate(20 60 30)'/%3E%3Cellipse cx='80' cy='15' rx='4' ry='6' fill='rgba(131,110,88,0.07)' transform='rotate(-50 80 15)'/%3E%3Cellipse cx='15' cy='45' rx='3' ry='5' fill='rgba(131,110,88,0.05)' transform='rotate(40 15 45)'/%3E%3Cellipse cx='45' cy='10' rx='3' ry='4' fill='rgba(131,110,88,0.06)' transform='rotate(-15 45 10)'/%3E%3C/svg%3E");
+    background-size: 100px 80px;
+    border: none;
+    transform-origin: top center;
+    transition: transform 0.8s cubic-bezier(0.3, 0, 0.2, 1);
+}
+[data-theme="autumn"] .page::after {
+    display: block;
+    background: linear-gradient(150deg, rgba(160,120,70,0.22) 0%, rgba(140,100,55,0.18) 40%, rgba(120,85,50,0.15) 70%, rgba(100,70,40,0.1) 100%);
+    transition: opacity 0.7s ease-out;
+}
+[data-theme="autumn"] #winSys.open .page {
+    transform: rotateX(-25deg) translateY(-3px);
+}
+[data-theme="autumn"] #winSys.open .page::after { opacity: 0; }
+[data-theme="autumn"] .trigger-autumn {
+    display: flex; flex-direction: column; align-items: center;
+    bottom: -5px; right: 18px;
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.6s;
+}
+[data-theme="autumn"] #winSys.open .trigger-autumn {
+    transform: translateY(20px) rotate(15deg); opacity: 0.2;
+}
+.pinecone-stem { width: 2px; height: 8px; background: #6a4a28; border-radius: 1px; position: relative; }
+.pinecone-stem::before { content: ''; position: absolute; top: 1px; left: -5px; width: 5px; height: 2px; background: #6a4a28; border-radius: 2px; transform: rotate(-25deg); }
+.pinecone-stem::after { content: ''; position: absolute; top: 2px; right: -5px; width: 5px; height: 2px; background: #6a4a28; border-radius: 2px; transform: rotate(25deg); }
+.pinecone-body {
+    width: 16px; height: 20px;
+    background: linear-gradient(to bottom, #9a7040, #7a5428, #5a3a18);
+    border-radius: 45% 45% 40% 40% / 30% 30% 55% 55%;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,200,130,0.2);
+}
+.pinecone-body::before {
+    content: ''; position: absolute;
+    top: 4px; left: 2px; right: 2px; height: 2px;
+    background: rgba(0,0,0,0.1);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08), 0 8px 0 rgba(0,0,0,0.06);
+}
+
+/* ─── ❄️ 冬：旧白木 + 霜窗 + 雪兔 ─── */
+[data-theme="winter"] .window-frame { display: block; }
+[data-theme="winter"] .window-frame.top-frame {
+    height: 9px;
+    background: linear-gradient(to bottom, #c8bfb2, #b5ada0, #a89b8e, #c0b8ab);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+[data-theme="winter"] .window-frame.bottom-frame {
+    height: 9px;
+    background: linear-gradient(to top, #c8bfb2, #b5ada0, #a89b8e);
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1), inset 0 -1px 0 rgba(255,255,255,0.3);
+}
+[data-theme="winter"] .window-frame.left-frame {
+    width: 9px;
+    background: linear-gradient(to right, #c0b8a8, #b0a898, #a89b8e);
+    box-shadow: 2px 0 4px rgba(0,0,0,0.1), inset 1px 0 0 rgba(255,255,255,0.35);
+}
+[data-theme="winter"] .window-frame.right-frame {
+    width: 9px;
+    background: linear-gradient(to left, #c0b8a8, #b0a898, #a89b8e);
+    box-shadow: -2px 0 4px rgba(0,0,0,0.1), inset -1px 0 0 rgba(255,255,255,0.3);
+}
+[data-theme="winter"] .frost-edge { display: block; }
+.frost-edge-top { top: 9px; left: 15px; right: 15px; height: 5px; background: linear-gradient(to bottom, rgba(255,255,255,0.5), transparent); }
+.frost-edge-left { top: 15px; bottom: 15px; left: 9px; width: 5px; background: linear-gradient(to right, rgba(255,255,255,0.4), transparent); }
+.frost-edge-bottom { bottom: 9px; left: 15px; right: 15px; height: 4px; background: linear-gradient(to top, rgba(255,255,255,0.3), transparent); }
+.frost-edge-right { top: 15px; bottom: 15px; right: 9px; width: 4px; background: linear-gradient(to left, rgba(255,255,255,0.3), transparent); }
+
+[data-theme="winter"] .page {
+    top: 9px; left: 9px; right: 9px; bottom: 9px;
+    background-color: rgba(245, 240, 235, 0.85);
+    background-image:
+        linear-gradient(0deg, transparent 49%, rgba(176,160,144,0.15) 49%, rgba(176,160,144,0.15) 51%, transparent 51%),
+        linear-gradient(90deg, transparent 49%, rgba(176,160,144,0.15) 49%, rgba(176,160,144,0.15) 51%, transparent 51%);
+    background-size: 50% 50%;
+    border: none;
+    transform-origin: top center;
+    transition: transform 1.2s cubic-bezier(0.3, 0, 0.2, 1);
+}
+[data-theme="winter"] .page::after {
+    display: block;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 0%, transparent 40%),
+        radial-gradient(circle at 70% 20%, rgba(230,240,250,0.8) 0%, transparent 35%),
+        radial-gradient(circle at 40% 70%, rgba(255,255,255,0.85) 0%, transparent 45%),
+        radial-gradient(circle at 80% 65%, rgba(230,240,250,0.7) 0%, transparent 30%),
+        radial-gradient(circle at 15% 80%, rgba(255,255,255,0.75) 0%, transparent 35%),
+        linear-gradient(135deg, rgba(255,255,255,0.6), rgba(230,240,250,0.4));
+    backdrop-filter: blur(3px);
+    border-radius: inherit;
+    transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 1.5s ease;
+}
+[data-theme="winter"] #winSys.open .page {
+    transform: rotateX(-15deg);
+}
+[data-theme="winter"] #winSys.open .page::after {
+    opacity: 0; backdrop-filter: blur(0px);
+}
+[data-theme="winter"] .trigger-winter {
+    display: flex; flex-direction: column; align-items: center;
+    bottom: -2px; right: 14px;
+    transition: transform 0.8s cubic-bezier(0.3, 0.8, 0.3, 1), opacity 0.8s;
+}
+[data-theme="winter"] #winSys.open .trigger-winter {
+    transform: translateX(-15px) translateY(5px); opacity: 0.3;
+}
+.snow-bunny { position: relative; width: 22px; height: 20px; }
+.bunny-body { position: absolute; bottom: 0; left: 3px; width: 16px; height: 13px; background: radial-gradient(ellipse at 60% 40%, #f5f2ec, #e8e4dc); border-radius: 50% 50% 45% 45%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.bunny-ear-l { position: absolute; top: 0; left: 5px; width: 4px; height: 10px; background: linear-gradient(to bottom, #f0ede6, #e5e0d8); border-radius: 50%; transform: rotate(-12deg); box-shadow: inset 1px 0 0 rgba(200,160,140,0.15); }
+.bunny-ear-r { position: absolute; top: -1px; left: 12px; width: 4px; height: 10px; background: linear-gradient(to bottom, #f0ede6, #e5e0d8); border-radius: 50%; transform: rotate(8deg); box-shadow: inset -1px 0 0 rgba(200,160,140,0.15); }
+.bunny-eye { position: absolute; top: 11px; right: 5px; width: 2.5px; height: 2.5px; background: #b04040; border-radius: 50%; }
+.bunny-tail { position: absolute; bottom: 3px; left: 0; width: 5px; height: 5px; background: radial-gradient(circle at 60% 40%, #f5f2ec, #e0dcd4); border-radius: 50%; }
+.bunny-nose { position: absolute; top: 13px; right: 3px; width: 2px; height: 1.5px; background: rgba(180,130,120,0.4); border-radius: 50%; }
+
+/* 提示框 */
+#toast { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--glass-bg); color: var(--text-color); padding: 8px 16px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; white-space: nowrap; }
+
+/* ============ App运行层 ============ */
+.app-layer { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: var(--bg-color); 
+    transform: translateY(100%); 
+    transition: transform 0.3s ease-in-out; 
+    z-index: 100; 
+    display: none;
+}
+
+.app-layer.active { 
+    transform: translateY(0); 
+}
+
+#app-frame { 
+    width: 100%; 
+    height: 100%; 
+    border: none; 
+    display: block; 
+}
+
+.home-btn { 
+    position: absolute; 
+    bottom: 20px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 120px; 
+    height: 30px; 
+    border-radius: 15px; 
+    border: none; 
+    background: var(--glass-bg); 
+    color: var(--text-color); 
+    cursor: pointer; 
+    font-size: 12px; 
+    z-index: 101;
+}
+
+/* 底部Dock区域 */
+.dock { 
+    height: 45px; 
+    background: transparent; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 0 28px; 
+    margin-bottom: 20px;
+    z-index: 100;
+    position: relative;
+}
+
+
+.dock-btn {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    outline: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color);
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.3s, transform 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 2;
+}
+
+.dock-btn:active {
+    opacity: 0.8;
+    transform: scale(0.9);
+}
+
+
+/* --- 新增：诗句绝对居中 --- */
+#poem-text {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-color);
+    font-size: 11px;
+    opacity: 0.5;
+    letter-spacing: 3px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+/* ============ 全屏沉浸模式 ============ */
+
+.phone-container.fullscreen-mode {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+}
+body:has(.phone-container.fullscreen-mode) {
+    background: var(--bg-color) !important;
+}
+

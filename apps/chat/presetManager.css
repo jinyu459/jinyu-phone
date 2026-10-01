@@ -1,0 +1,223 @@
+/* ===== test10 preset manager look ===== */
+#preset-manager-overlay {
+    --theme-main: #D6D2C8;
+    --theme-border: #E8E4DB;
+    --theme-header-bg: #F1EEE7;
+    --theme-text: #5D534A;
+    --theme-active: #C2BBAF;
+    --theme-apply-bg: #B0A898;
+    --theme-secret: #8C8678;
+}
+#preset-manager-overlay .preset-header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: transparent;
+    flex-shrink: 0;
+    z-index: 10;
+    position: relative;
+}
+#preset-manager-overlay .preset-header .back-btn {
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: #B0A898;
+    cursor: pointer;
+    letter-spacing: 1px;
+}
+#preset-manager-overlay .preset-page { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+#preset-manager-overlay .preset-capsule-btn {
+    background: rgba(255, 255, 255, 0.4);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--theme-secret);
+    letter-spacing: 1px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.02);
+    cursor: pointer;
+}
+#preset-manager-overlay .search-container { padding: 10px 20px 14px 20px; flex-shrink: 0; position: relative; z-index: 20; }
+#preset-manager-overlay .search-input {
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: #FDFBF7;
+    font-size: 13px;
+    color: #8C8678;
+    outline: none;
+    letter-spacing: 0.5px;
+    border-radius: 20px;
+    box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.04);
+}
+#preset-manager-overlay .search-input:focus { background: #FFFFFF; }
+#preset-manager-overlay .search-input::placeholder { color: #C2BBAF; font-size: 12px; }
+#preset-manager-overlay .envelope-list { flex: 1; overflow-y: auto; padding: 24px 20px 80px 20px; }
+#preset-manager-overlay .envelope { margin-bottom: 24px; position: relative; }
+#preset-manager-overlay .envelope-outer { width: 100%; position: relative; border-radius: 20px; background: transparent; }
+#preset-manager-overlay .envelope-body { width: 100%; height: 96px; position: relative; display: flex; align-items: center; padding: 0 16px; z-index: 2; cursor: pointer; border-radius: 20px; }
+#preset-manager-overlay .envelope-body:active { transform: scale(0.98); }
+#preset-manager-overlay .envelope-flap { width: 0; height: 0; border-left: 112px solid transparent; border-right: 112px solid transparent; border-top: 26px solid rgba(0,0,0,0.03); position: absolute; top: 0; left: 50%; transform: translateX(-50%); pointer-events: none; transition: transform 0.3s ease; transform-origin: top; }
+#preset-manager-overlay .envelope.open .envelope-flap { transform: translateX(-50%) rotateX(180deg); }
+#preset-manager-overlay .wax-seal { width: 26px; height: 26px; border-radius: 50%; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; font-size: 11px; color: rgba(255,255,255,0.9); z-index: 5; transition: opacity 0.25s ease; }
+#preset-manager-overlay .envelope.open .wax-seal { opacity: 0; }
+#preset-manager-overlay .secret-content { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; letter-spacing: 6px; transition: opacity 0.3s ease; }
+#preset-manager-overlay .real-content { width: 100%; display: flex; align-items: center; gap: 14px; opacity: 0; transform: translateX(-8px); transition: all 0.3s ease; pointer-events: none; }
+#preset-manager-overlay .envelope.open .secret-content { opacity: 0; pointer-events: none; }
+#preset-manager-overlay .envelope.open .real-content { opacity: 1; transform: translateX(0); pointer-events: auto; }
+#preset-manager-overlay .envelope-avatar { width: 50px; height: 50px; border-radius: 16px; background-size: cover; background-position: center; flex-shrink: 0; }
+#preset-manager-overlay .envelope-info { flex: 1; }
+#preset-manager-overlay .envelope-name { font-size: 15px; letter-spacing: 1px; }
+#preset-manager-overlay .envelope-role { font-size: 10px; margin-top: 4px; letter-spacing: 0.5px; }
+#preset-manager-overlay .envelope-arrow { font-size: 16px; transition: transform 0.3s; }
+#preset-manager-overlay .envelope.open .envelope-arrow { transform: rotate(90deg); }
+#preset-manager-overlay .letter-content { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+#preset-manager-overlay .envelope.open .letter-content { max-height: 500px; }
+#preset-manager-overlay .letter-inner { margin: 0 10px; padding: 24px 18px 20px 18px; max-height: 400px; overflow-y: auto; border-radius: 0 0 20px 20px; }
+#preset-manager-overlay .letter-text { padding-bottom: 5px; }
+#preset-manager-overlay .archive-row { display: flex; align-items: flex-start; margin-bottom: 8px; }
+#preset-manager-overlay .archive-label { font-size: 11px; margin-right: 14px; letter-spacing: 1px; flex-shrink: 0; margin-top: 2px; }
+#preset-manager-overlay .archive-value { flex: 1; text-align: justify; font-size: 12px; line-height: 1.6; word-break: break-word; }
+#preset-manager-overlay .archive-paragraph { text-align: justify; margin-top: 6px; margin-bottom: 12px; padding-left: 10px; border-left: 2px solid; font-size: 12px; line-height: 1.8; word-break: break-word; }
+#preset-manager-overlay .letter-actions { display: flex; gap: 8px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed; position: relative; z-index: 2; }
+#preset-manager-overlay .action-btn { flex: 1; padding: 8px 0; border-radius: 24px; font-size: 11px; cursor: pointer; border: none; transition: all 0.2s; letter-spacing: 1px; }
+#preset-manager-overlay .apply-btn { color: white; flex: 1.5; }
+#preset-manager-overlay .apply-btn:active { transform: scale(0.96); opacity: 0.8; }
+#preset-manager-overlay .edit-btn { background: #F2EFE8; color: #8C8678; margin-top: 0; width: auto; }
+#preset-manager-overlay .delete-btn { background: #F2EFE8; color: #D4A5A5; }
+#preset-manager-overlay .fab-add {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    background: #FFFFFF;
+    color: #B0A898;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 50;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+#preset-manager-overlay .fab-add:active { transform: scale(0.94); }
+
+#editPage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    z-index: 360;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-radius: 20px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    --theme-main: #D6D2C8;
+    --theme-border: #E8E4DB;
+    --theme-header-bg: #F1EEE7;
+    --theme-text: #5D534A;
+    --theme-active: #C2BBAF;
+    --theme-apply-bg: #B0A898;
+    --theme-secret: #8C8678;
+}
+#editPage .edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--theme-header-bg);
+    padding: 21px 20px 16px 20px;
+    flex-shrink: 0;
+    transition: background 0.3s, border-color 0.3s;
+    border-bottom: 1px solid var(--theme-border);
+}
+#editPage .edit-header button {
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: var(--theme-secret);
+    cursor: pointer;
+    padding: 4px 0;
+    transition: color 0.3s;
+}
+#editPage .edit-header h3 {
+    font-size: 15px;
+    font-weight: normal;
+    color: var(--theme-text);
+    letter-spacing: 1.5px;
+    margin: 0;
+    transition: color 0.3s;
+}
+#editPage .edit-body { flex: 1; overflow-y: auto; padding: 24px; }
+#editPage .profile-row { display: flex; gap: 24px; align-items: flex-start; margin-bottom: 32px; }
+#editPage .avatar-area { flex-shrink: 0; text-align: center; }
+#editPage .avatar-canvas { width: 76px; height: 76px; border-radius: 22px; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.03); background: var(--theme-header-bg); transition: background 0.3s; }
+#editPage .avatar-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
+#editPage .avatar-buttons button { background: none; border: none; font-size: 10px; color: var(--theme-secret); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 2px 0; }
+#editPage .info-area { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+#editPage .field label { display: block; font-size: 10px; color: var(--theme-secret); margin-bottom: 4px; letter-spacing: 1px; transition: color 0.3s; }
+#editPage .field input { width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--theme-border); padding: 6px 0 5px 0; font-size: 14px; color: var(--theme-text); outline: none; transition: border-color 0.3s, color 0.3s; }
+#editPage .field input:focus { border-bottom-color: var(--theme-main); }
+#editPage .theme-section { margin-bottom: 30px; }
+#editPage .theme-label { font-size: 10px; color: var(--theme-secret); margin-bottom: 12px; letter-spacing: 1px; }
+#editPage .color-row { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+#editPage .color-swatch { width: 28px; height: 28px; border-radius: 10px; cursor: pointer; transition: transform 0.1s, box-shadow 0.3s; border: 1px solid rgba(0,0,0,0.03); }
+#editPage .color-swatch.active { box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3px var(--theme-active); transform: scale(1.05); }
+#editPage .color-hex { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--theme-border); padding: 5px 0; width: fit-content; transition: border-color 0.3s; }
+#editPage .color-hex span { font-size: 10px; color: var(--theme-secret); }
+#editPage .color-hex input { border: none; background: transparent; font-size: 11px; font-family: monospace; width: 86px; outline: none; color: var(--theme-text); letter-spacing: 0.5px; }
+#editPage .secret-label { display: block; font-size: 10px; color: var(--theme-secret); margin-bottom: 8px; letter-spacing: 1px; }
+#editPage .secret-textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--theme-border); padding: 8px 0 12px 0; font-size: 13px; color: var(--theme-text); outline: none; resize: vertical; min-height: 108px; line-height: 1.6; transition: border-color 0.3s, color 0.3s; }
+#editPage .secret-textarea:focus { border-bottom-color: var(--theme-main); }
+#editPage .file-import { display: inline-flex; align-items: center; justify-content: center; width: 120px; height: 35px; margin-top: 20px; background: #fffcf5; border-radius: 12px; font-size: 11px; color: var(--theme-secret); cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+#editPage .file-import:hover { background: var(--theme-header-bg); }
+#editPage .file-input { display: none; }
+
+#customModal.custom-modal-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(214, 210, 200, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 700;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    border-radius: 20px;
+}
+#customModal.custom-modal-overlay.show { opacity: 1; }
+#customModal .custom-modal-box {
+    width: 260px;
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 24px 20px 20px 20px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.02);
+    transform: translateY(10px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    text-align: center;
+}
+#customModal.custom-modal-overlay.show .custom-modal-box { transform: translateY(0) scale(1); }
+#customModal .custom-modal-title { font-size: 15px; color: var(--theme-text); margin-bottom: 10px; letter-spacing: 1px; }
+#customModal .custom-modal-msg { font-size: 12px; color: var(--theme-secret); line-height: 1.6; margin-bottom: 24px; word-break: break-word; }
+#customModal .custom-modal-actions { display: flex; gap: 10px; }
+#customModal .custom-modal-btn { flex: 1; padding: 10px 0; border: none; border-radius: 16px; font-size: 12px; cursor: pointer; letter-spacing: 1px; }
+#customModal .custom-modal-cancel { background: #F2EFE8; color: #8C8678; }
+#customModal .custom-modal-confirm { color: #FFFFFF; background: var(--theme-apply-bg); }
+
+#editPage.show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}

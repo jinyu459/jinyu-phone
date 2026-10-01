@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锦玉小手札 - 故交</title>
+    <link rel="stylesheet" href="yutang2.css">
+</head>
+<body>
+
+<div id="test-container">
+
+    <div class="page-header">
+        <div class="header-left-actions">
+            <button class="recycle-btn" id="recycleBtn" title="回收站">
+                <svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;stroke-width:2;fill:none;">
+                    <path d="M3 6h18"></path>
+                    <path d="M8 6V4h8v2"></path>
+                    <rect x="6" y="6" width="12" height="14" rx="1"></rect>
+                </svg>
+            </button>
+        </div>
+        <div class="page-title">故交</div>
+        <button class="filter-btn" id="filterBtn">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;">
+                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 筛选标签栏 -->
+    <div class="filter-tags" id="filterTags">
+        <div class="filter-tag active" data-filter="all">全部</div>
+        <div class="filter-tag" data-filter="campus">校园</div>
+        <div class="filter-tag" data-filter="work">职场</div>
+        <div class="filter-tag" data-filter="family">家人</div>
+        <div class="filter-tag" data-filter="other">其他</div>
+    </div>
+    <!-- 提示文字 -->
+    <div class="hint-text" id="hintText">长按不放小鱼的话，小鱼会消失哦</div>
+
+    <!-- 鱼塘 -->
+    <div id="fish-pond">
+        <div class="water-ripple"></div>
+    </div>
+
+    <!-- 右下角加号 -->
+    <div class="fab-add" id="fabAdd">+</div>
+
+    <!-- 遮罩 -->
+    <div class="sheet-overlay" id="sheetOverlay"></div>
+
+    <!-- 新增故交弹层 -->
+    <div class="bottom-sheet" id="newFishSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">新增故交</div>
+
+        <div class="new-sheet-field">
+            <div class="new-sheet-label">名字</div>
+            <input class="new-sheet-input" id="new-fish-name" placeholder="人物名字">
+        </div>
+        <div class="new-sheet-field">
+            <div class="new-sheet-label">关系</div>
+            <input class="new-sheet-input" id="new-fish-role" placeholder="室友 / 师尊 / 同事...">
+        </div>
+
+        <div class="new-sheet-field" style="align-items:flex-start; margin-bottom:4px;">
+            <div class="new-sheet-label" style="padding-top:4px;">颜色</div>
+            <div style="flex:1;">
+                <div class="color-pick-row" id="colorPickRow">
+                    <div class="color-dot selected" style="background:rgba(248,241,229,0.9);" data-color="rgba(248,241,229,0.88)" data-type="fish-gold"></div>
+                    <div class="color-dot" style="background:rgba(252,235,236,0.9);" data-color="rgba(252,235,236,0.88)" data-type="fish-pink"></div>
+                    <div class="color-dot" style="background:rgba(236,242,245,0.9);" data-color="rgba(236,242,245,0.88)" data-type="fish-blue"></div>
+                    <div class="color-dot" style="background:rgba(220,232,220,0.9);" data-color="rgba(220,232,220,0.88)" data-type="fish-custom"></div>
+                    <div class="color-dot" style="background:rgba(235,225,245,0.9);" data-color="rgba(235,225,245,0.88)" data-type="fish-custom"></div>
+                    <div class="color-hex-wrap">
+                        <input class="color-hex-in" id="colorHexIn" placeholder="自定义颜色">
+                        <div class="color-preview-dot" id="colorPreviewDot" style="background:rgba(248,241,229,0.9);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="sheet-confirm-btn" id="confirmAddFish">放入鱼塘</button>
+    </div>
+
+    <!-- 故交详情底部卡片 -->
+    <div class="bottom-sheet" id="detail-sheet">
+        <div class="sheet-handle"></div>
+        <div class="detail-fish-head">
+            <div class="detail-fish-icon" id="detail-fish-icon"></div>
+            <div class="detail-name-block">
+                <div class="detail-name" id="detail-name"></div>
+                <div class="detail-role" id="detail-role"></div>
+            </div>
+        </div>
+        <div class="detail-divider"></div>
+        <div class="detail-desc" id="detail-desc"></div>
+        <div class="detail-btn-row">
+            <button class="detail-btn" id="detail-edit-btn">编辑人设</button>
+            <button class="detail-btn primary" id="detail-chat-btn">查看聊天记录</button>
+        </div>
+    </div>
+
+    <!-- 编辑全屏页 -->
+    <div class="edit-page" id="editPage">
+        <div class="edit-header">
+            <button class="edit-back-btn" id="editBack">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+            </button>
+            <div class="edit-page-title" id="editPageTitle">编辑人设</div>
+            <button class="edit-save-btn" id="editSave">保存</button>
+        </div>
+        <div class="edit-body">
+            <div class="edit-block">
+                <div class="edit-block-title">头像</div>
+                <div class="avatar-edit-area">
+                    <div class="avatar-edit-preview" id="avatarEditPreview"></div>
+                    <div class="avatar-edit-btns">
+                        <button class="avatar-edit-btn" id="avatarUploadBtn">更换头像</button>
+                        <button class="avatar-edit-btn secondary" id="avatarResetBtn">纯色头像</button>
+                    </div>
+                </div>
+                <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+            </div>
+
+            <div class="edit-block">
+                <div class="edit-block-title">鱼身颜色</div>
+                <div class="edit-color-area">
+                    <div class="edit-color-preview" id="editColorPreview"></div>
+                    <div class="edit-color-options">
+                        <div class="edit-color-dots" id="editColorDots">
+                            <!-- 预设颜色会动态生成 -->
+                        </div>
+                        <div class="edit-color-custom">
+                            <input class="edit-color-hex" id="editColorHex" placeholder="#颜色代码">
+                            <button class="edit-color-apply" id="editColorApply">应用</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="edit-block">
+                <div class="edit-block-title">基本信息</div>
+                <div class="edit-field">
+                    <div class="edit-field-label">名字</div>
+                    <input class="edit-field-input" id="edit-name" placeholder="人物名字">
+                </div>
+                <div class="edit-field">
+                    <div class="edit-field-label">身份</div>
+                    <input class="edit-field-input" id="edit-role" placeholder="室友 / 师尊 / 同事...">
+                </div>
+            </div>
+
+            <div class="edit-block">
+                <div class="edit-block-title">简介</div>
+                <textarea class="edit-textarea" id="edit-desc" rows="2" placeholder="一句话介绍、口头禅、简单关系..."></textarea>
+            </div>
+            <div class="edit-block">
+                <div class="edit-block-title">人物背景</div>
+                <textarea class="edit-textarea" id="edit-bg" rows="4" placeholder="详细的性格、外貌、经历、与你的渊源..."></textarea>
+            </div>
+            <div class="edit-block">
+                <div class="edit-block-title">世界书设定</div>
+                <div class="edit-preset-row">
+                    <select class="edit-preset-select" id="editWorldbookSelect">
+                        <option value="">选择世界书</option>
+                        <!-- 动态从世界书APP加载 -->
+
+                    </select>
+                    <button class="edit-preset-apply" id="editWorldbookApply">应用</button>
+                </div>
+                <div class="worldbook-preview" id="worldbookPreview">未选择世界书</div>
+                <div class="worldbook-hint">选择预设的世界观背景设定</div>
+            </div>
+            <div class="edit-block">
+                <div class="edit-block-title">导入 TXT</div>
+                <div class="import-box" id="importBox">
+                    <div class="import-icon">+</div>
+                    <div class="import-text">选择文件导入</div>
+                </div>
+                <input type="file" id="fileInput" accept=".txt" style="display:none;">
+                <div style="font-size:0.55rem;color:#ccc;margin-top:6px;padding-left:2px;line-height:1.4;">
+    支持：TXT<br>
+    TXT 格式：名字：xxx／关系：xxx／简介：xxx／背景：xxx
+</div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 回收站 -->
+    <div class="bottom-sheet" id="recycleSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">回收站</div>
+        <div class="recycle-list" id="recycleList"></div>
+        <div class="recycle-clear-row">
+            <button class="recycle-clear-btn" id="recycleClearBtn">清空</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="switchTab('profile', this)">
+            <div class="nav-icon-box nav-icon-profile"></div>
+            <div class="nav-text">小像</div>
+        </div>
+        <div class="nav-item active" onclick="switchTab('contacts', this)">
+            <div class="nav-icon-box nav-icon-contacts"></div>
+            <div class="nav-text">故交</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('chats', this)">
+            <div class="nav-icon-box nav-icon-chats"></div>
+            <div class="nav-text">传书</div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+</div>
+
+<script src="yutang2.js"></script>
+</body>
+</html>
+
+
+

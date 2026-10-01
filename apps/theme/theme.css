@@ -1,0 +1,747 @@
+ /* ══════ 1. 全局变量 ══════ */
+    :root {
+      --bg: #F8F6F2;
+      --surface: rgba(255,255,255,0.45);
+      --accent: #A6998A;
+      --accent-light: rgba(166,153,138,0.15);
+      --text-main: #36322E;
+      --text-sub: #8B857D;
+      --text-hint: rgba(54,50,46,0.22);
+     --line: rgba(166,153,138,0.12);
+     --line-heavy: rgba(166,153,138,0.25);
+      --danger-light: #C9A0A0;
+      --r-sm: 3px;
+      --r-md: 6px;
+      --r-lg: 10px;
+   --primary-color: #A6998A;
+--primary: #A6998A;
+--primary-light: rgba(166,153,138,0.15);
+--primary-hover: #8B7E74;
+--border-color: rgba(166,153,138,0.18);
+--text-color: #36322E;
+
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    body{
+body{
+  margin:0;padding:0;
+  width:100%;height:100vh;
+  overflow:hidden;
+}
+
+}
+.phone-container{
+  width:100%;height:100vh;
+  background-color:var(--bg);
+  border-radius:0;
+  border:none;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+
+    /* ══════ 2. 容器与竖线纹理 ══════ */
+    .app-container{
+      width:100%;height:100%;
+      background:var(--bg);
+      display:flex;flex-direction:column;
+      font-family:'Noto Serif SC','SimSun','宋体',serif;
+      color:var(--text-main);
+      overflow:hidden;position:relative;
+    }
+    .app-container::before{
+      content:'';position:absolute;
+      top:0;left:0;right:0;bottom:0;
+      background:repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(166,153,138,0.03) 48px,rgba(166,153,138,0.03) 49px);
+      pointer-events:none;z-index:0;
+    }
+
+    .main-body{
+  display:flex;flex:1;overflow:hidden;
+}
+
+
+    /* ══════ 3. 顶部 ══════ */
+    .header{
+      display:flex;align-items:center;
+      padding:14px 14px 10px;
+      position:relative;z-index:2;
+      border-bottom:1px solid var(--line);
+    }
+    .back-btn{
+      background:none;border:none;
+      color:var(--accent);font-size:12px;
+      display:flex;align-items:center;gap:3px;
+      cursor:pointer;font-family:inherit;
+    }
+    .header-title{
+      position:absolute;left:50%;transform:translateX(-50%);
+      font-size:14px;letter-spacing:6px;
+      color:var(--text-main);font-weight:400;
+    }
+
+    /* ══════ 4. 线装打孔导航（右侧竖排） ══════ */
+.tabs{
+  display:flex;flex-direction:column;
+  align-items:center;padding:12px 0;
+  background:rgba(248,246,242,0.95);
+  border-left:1px solid var(--line);
+  width:34px;flex-shrink:0;
+  order:2;
+}
+
+    .tab-item{
+      writing-mode:vertical-rl;
+      font-size:10px;letter-spacing:3px;
+      color:var(--text-sub);
+      padding:30px 5px;cursor:pointer;
+      position:relative;transition:color 0.3s;
+      border:none;background:none;
+      font-family:inherit;
+    }
+    .tab-item::before{
+      content:'';position:absolute;
+      left:50%;top:0;transform:translateX(-50%);
+      width:5px;height:5px;border-radius:50%;
+      border:1px solid var(--line-heavy);
+      background:var(--bg);
+    }
+    .tab-item.active{
+      color:var(--text-main);
+      background:rgba(166,153,138,0.08);
+    }
+    .tab-item.active::after{
+      content:'';position:absolute;
+      left:0;top:25%;bottom:25%;
+      width:2px;background:var(--accent);
+    }
+
+    /* ══════ 5. 内容面板 ══════ */
+.tab-content{
+  display:none;flex:1;
+  overflow-y:auto;overflow-x:hidden;
+  padding:14px 14px 20px 14px;
+  order:1;
+  animation:pageIn 0.35s ease-out;
+}
+
+    .tab-content.active{display:block;}
+@keyframes pageIn{
+    0%{opacity:0;transform:translateY(8px);}
+    100%{opacity:1;transform:translateY(0);}
+}
+
+    .tab-content::-webkit-scrollbar{width:2px;}
+    .tab-content::-webkit-scrollbar-thumb{background:var(--line-heavy);border-radius:1px;}
+    .tab-content::-webkit-scrollbar-track{background:transparent;}
+
+    /* ══════ 6. 应用自带 边框 ══════ */
+    .builtin-group{
+      border:1px solid var(--line);
+      border-radius:var(--r-lg);
+      padding:14px 10px 10px;
+      margin-bottom:14px;position:relative;
+    }
+    .builtin-group::before{
+      content:'应用自带';position:absolute;
+      top:-8px;left:12px;
+      font-size:9px;color:var(--text-sub);
+      background:var(--bg);padding:0 6px;
+      letter-spacing:2px;
+    }
+
+    /* ══════ 7. 卡片网格（统一小尺寸） ══════ */
+    .card-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:20px;
+    }
+    .season-card,.font-card,.wallpaper-btn{
+      height:52px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:11px;letter-spacing:2px;
+      border:1px solid var(--line);border-radius:var(--r-sm);
+      background:var(--surface);
+      cursor:pointer;transition:all 0.25s;
+      color:var(--text-main);position:relative;
+      font-family:inherit;
+    }
+    .season-card:active,.wallpaper-btn:active{background:var(--accent-light);}
+.spring-card{background:rgba(193,213,192,0.2);}
+.summer-card{background:rgba(249,235,237,0.35);}
+.autumn-card{background:rgba(234,215,177,0.25);}
+.winter-card{background:rgba(232,241,245,0.35);}
+
+    .wallpaper-btn{font-family:inherit;}
+
+    /* ══════ 8. 自定义区块/卡片 ══════ */
+    .custom-section,.jinyu-card{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--r-lg);
+      padding:14px;margin-bottom:14px;
+      position:relative;
+    }
+    .custom-section h3,.jinyu-card h3{
+      font-size:12px;font-weight:400;
+      color:var(--text-main);margin-bottom:10px;
+      letter-spacing:3px;padding-bottom:8px;
+      border-bottom:1px dashed var(--line);
+    }
+    .sub-title{
+      font-size:10px;color:var(--text-sub);
+      margin-bottom:10px;margin-top:-4px;
+      letter-spacing:1px;
+    }
+
+    /* ══════ 9. 输入框 ══════ */
+    .jinyu-input,.name-input{
+      width:100%;padding:6px 8px;
+      border:1px solid var(--line);
+      border-radius:var(--r-sm);font-size:11px;
+      background:rgba(255,255,255,0.25);
+      color:var(--text-main);font-family:inherit;
+      transition:border-color 0.2s;
+    }
+    .jinyu-input:focus,.name-input:focus{
+      outline:none;border-color:var(--accent);
+    }
+
+    /* ══════ 10. 按钮 ══════ */
+    .jinyu-btn,.img-pick-btn,.img-clear-btn{
+      padding:4px 9px;border:none;
+      border-radius:var(--r-sm);font-size:10px;
+      cursor:pointer;font-family:inherit;
+      transition:all 0.2s;white-space:nowrap;
+      letter-spacing:1px;
+    }
+    .primary-tint,.img-pick-btn{
+      background:var(--accent-light);color:var(--accent);
+    }
+    .primary-tint:active,.img-pick-btn:active{
+      background:rgba(166,153,138,0.25);
+    }
+    .gray-tint,.img-clear-btn{
+      background:rgba(0,0,0,0.03);color:var(--text-sub);
+    }
+    .gray-tint:active,.img-clear-btn:active{
+      background:rgba(0,0,0,0.07);
+    }
+    .dashed-btn{
+      border:1px dashed var(--line-heavy);
+      background:transparent;color:var(--text-sub);
+      padding:7px 12px;display:flex;
+      align-items:center;gap:5px;
+    }
+    .danger-tint{
+      background:rgba(201,160,160,0.12);
+      color:var(--danger-light);
+    }
+
+    /* ══════ 11. 输入+按钮行 ══════ */
+    .input-with-btn{display:flex;gap:6px;align-items:center;}
+    .custom-input-group{margin-bottom:10px;}
+    .custom-input-group label{
+      font-size:10px;color:var(--text-sub);
+      display:block;margin-bottom:5px;letter-spacing:1px;
+    }
+    .custom-input-group.border-top{
+      padding-top:10px;border-top:1px dashed var(--line);
+    }
+    .action-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+
+    /* ══════ 12. Gallery ══════ */
+    .gallery-box{
+      display:flex;flex-wrap:wrap;
+      gap:10px;padding:10px 0;
+      min-height:36px;align-items:center;
+    }
+    .gallery-box.horizontal-scroll{
+      flex-wrap:wrap;
+      padding-bottom:6px;gap:14px;
+    }
+    .gallery-box.horizontal-scroll::-webkit-scrollbar{height:2px;}
+    .gallery-box.horizontal-scroll::-webkit-scrollbar-thumb{background:var(--line-heavy);}
+    .empty-tip{font-size:10px;color:var(--text-hint);letter-spacing:1px;}
+
+    /* 预设胶囊X按钮强制淡红 */
+    .gallery-box [onclick*="delete"],
+    .gallery-box [onclick*="remove"],
+    .gallery-box [onclick*="Delete"],
+    .gallery-box [onclick*="Remove"],
+    .gallery-box .close-btn,
+    .gallery-box [class*="close"],
+    .gallery-box [class*="delete"],
+    .gallery-box [class*="remove"]{
+      color:var(--danger-light) !important;
+    }
+
+    /* 壁纸缩略图 */
+#wallpaper-gallery img,
+#wallpaper-gallery .wallpaper-thumb{
+    width:56px;height:56px;
+    border-radius:var(--r-sm);
+    border:1px solid var(--line);
+    flex-shrink:0;
+    position:relative;
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    overflow:visible;
+    cursor:pointer;
+}
+#wallpaper-gallery img{
+    object-fit:cover;
+}
+#wallpaper-gallery .wallpaper-thumb.active-wallpaper{
+    border-color:var(--accent);
+    box-shadow:0 0 0 1.5px var(--accent);
+}
+#wallpaper-gallery .wallpaper-thumb .delete-thumb-btn{
+    position:absolute;top:-6px;right:-6px;
+    width:14px;height:14px;font-size:8px;
+    line-height:14px;text-align:center;
+    background:rgba(166,153,138,0.2) !important;
+    color:rgba(166,153,138,0.5) !important;
+    border:none !important;border-radius:50%;
+    cursor:pointer;padding:0;
+}
+#wallpaper-gallery .wallpaper-thumb div[style*="background"]{
+    background:rgba(166,153,138,0.12) !important;
+    color:#8B857D !important;
+    border:1px solid var(--line) !important;
+    border-radius:10px !important;
+    font-size:9px !important;
+    padding:2px 7px !important;
+    backdrop-filter:none !important;
+}
+
+
+    /* ══════ 13. 字体上传预览区 ══════ */
+    .preview-box{
+      margin-top:10px;padding:10px;
+      border:1px dashed var(--line);
+      border-radius:var(--r-md);
+      background:rgba(255,255,255,0.15);
+    }
+    .preview-label{font-size:10px;color:var(--text-sub);margin-bottom:5px;}
+    .preview-text{
+      font-size:18px;padding:10px 0;
+      color:var(--text-main);text-align:center;
+      border-bottom:1px dashed var(--line);margin-bottom:8px;
+    }
+
+    /* ══════ 14. 字体预览卡（新增） ══════ */
+    .font-preview-card{
+      background:rgba(255,255,255,0.2);
+      border:1px solid var(--line);
+      border-radius:var(--r-lg);
+      padding:14px;margin-bottom:14px;
+    }
+    .font-preview-header{
+      display:flex;justify-content:space-between;
+      align-items:center;margin-bottom:10px;
+    }
+    .font-preview-title{
+      font-size:11px;color:var(--text-sub);letter-spacing:2px;
+    }
+    .font-preview-input{
+      width:100%;padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:rgba(255,255,255,0.2);
+      color:var(--text-main);font-size:13px;
+      font-family:inherit;margin-bottom:10px;
+    }
+    .font-preview-input:focus{outline:none;border-color:var(--accent);}
+    .font-preview-text{
+      font-size:22px;text-align:center;
+      padding:16px 0;color:var(--text-main);
+      border-top:1px dashed var(--line);
+      border-bottom:1px dashed var(--line);
+      font-family:inherit;
+    }
+
+    /* ══════ 15. 图标外观控制 ══════ */
+    .control-row{
+      display:flex;align-items:center;
+      justify-content:space-between;padding:5px 0;
+    }
+    .control-label{
+      font-size:11px;font-weight:400;
+      min-width:32px;letter-spacing:2px;
+    }
+    .control-body{
+      flex:1;display:flex;align-items:center;margin-left:8px;
+    }
+    input[type="range"]{
+      flex:1;-webkit-appearance:none;
+      height:2px;border-radius:1px;background:var(--line);
+    }
+    input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      width:14px;height:14px;border-radius:50%;
+      background:var(--bg);border:1.5px solid var(--accent);
+      cursor:pointer;
+    }
+    .control-value{
+      min-width:32px;text-align:right;
+      font-size:10px;color:var(--accent);margin-left:6px;
+    }
+    .preview-area{
+      display:flex;justify-content:center;
+      padding:12px 0 8px;margin-top:6px;
+      background:rgba(255,255,255,0.1);
+      border-radius:var(--r-md);
+      border:1px dashed var(--line);
+    }
+    .preview-icon-box{display:flex;flex-direction:column;align-items:center;}
+    .preview-icon{
+      background:rgba(166,153,138,0.1);
+      display:flex;justify-content:center;align-items:center;
+      color:var(--accent);font-size:11px;transition:all 0.3s;
+    }
+    .preview-icon-name{margin-top:6px;font-size:9px;color:var(--text-sub);}
+
+    /* ══════ 15.5 批量导入图库 ══════ */
+    .batch-import-area{
+      margin-bottom:14px;
+      padding-bottom:12px;
+      border-bottom:1px dashed var(--line);
+    }
+    .batch-pool{
+      display:flex;flex-wrap:wrap;
+      gap:8px;padding:10px 0;
+      min-height:36px;align-items:center;
+    }
+    .batch-thumb{
+      width:48px;height:48px;
+      border-radius:var(--r-sm);
+      border:2px solid var(--line);
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      cursor:pointer;
+      transition:all 0.2s;
+      flex-shrink:0;
+    }
+    .batch-thumb.selected{
+      border-color:var(--accent);
+      box-shadow:0 0 0 2.5px var(--accent);
+    }
+    .batch-thumb.used{
+      opacity:0.4;
+    }
+
+
+    /* ══════ 16. 图标定制双列网格 ══════ */
+    .icon-edit-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+    .icon-edit-item{
+      display:flex;flex-direction:column;
+      align-items:center;
+      background:rgba(255,255,255,0.18);
+      border:1px solid var(--line);
+      padding:10px 8px 18px;
+      border-radius:var(--r-md);
+      gap:6px;position:relative;
+    }
+    .icon-edit-item .icon-img-preview{
+      width:40px;height:40px;
+      border-radius:var(--r-sm);
+      border:1px solid var(--line);
+      background-color:rgba(255,255,255,0.15);
+      background-size:cover;background-position:center;
+      flex-shrink:0;
+    }
+    .icon-img-preview.has-image{border-color:var(--accent);}
+    .icon-edit-item .name-input{
+      width:65%;padding:4px 6px;
+      font-size:10px;text-align:center;
+    }
+    .icon-edit-item .icon-btn-row{
+      display:flex;gap:6px;
+    }
+    .icon-edit-item .app-origin-label{
+      position:absolute;bottom:3px;left:6px;
+      font-size:8px;color:var(--text-hint);
+      letter-spacing:1px;pointer-events:none;
+    }
+
+    /* ══════ 17. 预设底部操作 ══════ */
+    .presets-footer-actions{
+      display:flex;justify-content:flex-end;
+      gap:6px;margin-top:8px;
+      padding-top:8px;border-top:1px dashed var(--line);
+    }
+    .presets-footer-actions .reset-btn,
+    .presets-footer-actions .save-btn{
+      padding:4px 9px;border:none;
+      border-radius:var(--r-sm);font-size:10px;
+      cursor:pointer;font-family:inherit;
+      letter-spacing:1px;transition:all 0.2s;
+    }
+    .presets-footer-actions .reset-btn{
+      background:rgba(0,0,0,0.03);color:var(--text-sub);
+    }
+    .presets-footer-actions .save-btn{
+      background:var(--accent-light);color:var(--accent);
+    }
+
+    /* ══════ 18. 弹窗（保留原有inline style，仅补充古风化） ══════ */
+    #theme-modal-overlay .jinyu-input{
+      background:rgba(255,255,255,0.3);
+      border-color:var(--line);
+    }
+
+
+    /* ══════ 20. 底部操作栏（已移走按钮，隐藏） ══════ */
+    .bottom-action-bar{display:none;}
+
+/* ══════ 全屏模式 ══════ */
+.phone-container.fullscreen-mode{
+  position: absolute !important; top: 0 !important; left: 0 !important;
+  width:100% !important;height:100% !important;
+  border-radius:0 !important;border:none !important; margin: 0 !important;
+}
+
+
+    /* ══════ 修复1：弹窗约束在phone-container内 ══════ */
+
+    /* ══════ 应用内部主题 ══════ */
+[data-app-theme="peach"]{
+  --bg: #FCF5F6;
+  --surface: rgba(255,255,255,0.45);
+  --accent: #C4A3A3;
+  --accent-light: rgba(196,163,163,0.12);
+  --text-main: #3A3235;
+  --text-sub: #9A8A8D;
+  --line: rgba(196,163,163,0.12);
+  --line-heavy: rgba(196,163,163,0.22);
+}
+[data-app-theme="sky"]{
+  --bg: #F4F7F9;
+  --surface: rgba(255,255,255,0.45);
+  --accent: #92ABB8;
+  --accent-light: rgba(146,171,184,0.12);
+  --text-main: #2F353A;
+  --text-sub: #8A939A;
+  --line: rgba(146,171,184,0.12);
+  --line-heavy: rgba(146,171,184,0.22);
+}
+[data-app-theme="pear"]{
+  --bg: #F7F2E6;
+  --surface: rgba(255,250,240,0.5);
+  --accent: #A89570;
+  --accent-light: rgba(168,149,112,0.12);
+  --text-main: #3A3528;
+  --text-sub: #8E876E;
+  --line: rgba(168,149,112,0.15);
+  --line-heavy: rgba(168,149,112,0.25);
+}
+.app-theme-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.app-theme-card{
+  height:52px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;letter-spacing:2px;
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  cursor:pointer;transition:all 0.25s;
+  color:var(--text-main);font-family:inherit;
+  background:var(--surface);
+}
+.app-theme-card:active{background:var(--accent-light);}
+.app-theme-card.active-app-theme{
+  border-color:var(--accent);
+  background:rgba(166,153,138,0.35) !important;
+  box-shadow:inset 0 0 0 2.5px var(--accent);
+}
+.app-theme-card.atc-default{background:rgba(248,246,242,0.4);}
+.app-theme-card.atc-peach{background:rgba(249,235,237,0.3);}
+.app-theme-card.atc-sky{background:rgba(232,241,245,0.3);}
+.app-theme-card.atc-pear{background:rgba(234,215,177,0.25);}
+
+    /* ══════ 修复0：动态胶囊古风化 ══════ */
+#my-themes-gallery .jinyu-btn.font-btn,
+#custom-fonts-gallery .jinyu-btn.font-btn,
+#icon-presets-gallery .jinyu-btn.font-btn,
+#modal-font-list .jinyu-btn,
+#modal-wallpaper-list .jinyu-btn,
+#modal-icon-list .jinyu-btn{
+  background:rgba(166,153,138,0.08) !important;
+  color:var(--text-main) !important;
+  border:1px solid var(--line) !important;
+  border-radius:20px !important;
+  font-family:inherit !important;
+  font-weight:400 !important;
+  padding:5px 12px !important;
+  font-size:11px !important;
+  letter-spacing:1px !important;
+}
+#my-themes-gallery .jinyu-btn.font-btn:active,
+#custom-fonts-gallery .jinyu-btn.font-btn:active,
+#icon-presets-gallery .jinyu-btn.font-btn:active,
+#modal-font-list .jinyu-btn:active,
+#modal-wallpaper-list .jinyu-btn:active,
+#modal-icon-list .jinyu-btn:active{
+  background:rgba(166,153,138,0.18) !important;
+}
+
+#theme-modal-overlay{
+  position:absolute !important;
+  top:0 !important;
+  left:0 !important;
+  width:100% !important;
+  height:100% !important;
+  border-radius:32px;
+  z-index:999;
+}
+.phone-container{
+  position:relative;
+}
+
+/* ══════ 修复2：全局蓝色消杀 ══════ */
+*:focus{
+  outline:none !important;
+  box-shadow:none !important;
+}
+*::selection{
+  background:rgba(166,153,138,0.2);
+  color:var(--text-main);
+}
+input:focus,textarea:focus,select:focus,button:focus{
+  outline:none !important;
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 2px rgba(166,153,138,0.1) !important;
+}
+.season-card.active,.season-card.selected,
+.season-card[data-active="true"],
+.font-card.active,.font-card.selected,
+.font-card[data-active="true"],
+.wallpaper-btn.active,.wallpaper-btn.selected,
+.wallpaper-btn[data-active="true"]{
+  border-color:var(--accent) !important;
+  background:rgba(166,153,138,0.4) !important;
+  color:var(--text-main) !important;
+ box-shadow:inset 0 0 0 2.5px var(--accent) !important;
+}
+.tab-item.active{
+  color:var(--text-main) !important;
+  background:rgba(166,153,138,0.08) !important;
+}
+a,a:visited,a:hover,a:focus,a:active{
+  color:var(--accent) !important;
+}
+button:active{
+  background:var(--accent-light) !important;
+}
+input[type="range"]::-webkit-slider-thumb{
+  border-color:var(--accent) !important;
+}
+input[type="range"]:focus::-webkit-slider-thumb{
+  box-shadow:0 0 0 3px rgba(166,153,138,0.15) !important;
+}
+/* 弹窗内胶囊选中态 */
+#modal-font-list .active,
+#modal-font-list .selected,
+#modal-wallpaper-list .active,
+#modal-wallpaper-list .selected,
+#modal-icon-list .active,
+#modal-icon-list .selected{
+  background:rgba(166,153,138,0.15) !important;
+  border-color:var(--accent) !important;
+  color:var(--text-main) !important;
+}
+
+/* ══════ 修复3：顶部下移 ══════ */
+.header{
+  padding:38px 14px 12px !important;
+}
+
+/* ══════ 修复4：美化标题胶囊化右上角 ══════ */
+.header-title{
+  position:absolute !important;
+  right:14px !important;
+  left:auto !important;
+  transform:none !important;
+  font-size:9px !important;
+  letter-spacing:2px !important;
+  padding:3px 12px !important;
+  border:1px solid var(--line) !important;
+  border-radius:20px !important;
+  color:var(--text-sub) !important;
+  background:rgba(255,255,255,0.15) !important;
+}
+
+/* ══════ 修复5：预设胶囊叉叉 - 透明淡色+缩小 ══════ */
+#my-themes-gallery [onclick*="delete"],
+#my-themes-gallery [onclick*="Delete"],
+#my-themes-gallery [onclick*="remove"],
+#my-themes-gallery [onclick*="Remove"],
+#custom-fonts-gallery [onclick*="delete"],
+#custom-fonts-gallery [onclick*="Delete"],
+#custom-fonts-gallery [onclick*="remove"],
+#custom-fonts-gallery [onclick*="Remove"],
+#wallpaper-gallery [onclick*="delete"],
+#wallpaper-gallery [onclick*="Delete"],
+#wallpaper-gallery [onclick*="remove"],
+#wallpaper-gallery [onclick*="Remove"],
+#icon-presets-gallery [onclick*="delete"],
+#icon-presets-gallery [onclick*="Delete"],
+#icon-presets-gallery [onclick*="remove"],
+#icon-presets-gallery [onclick*="Remove"],
+.gallery-box [class*="close"],
+.gallery-box [class*="delete"],
+.gallery-box [class*="remove"],
+.gallery-box [class*="del"]{
+  color:rgba(166,153,138,0.35) !important;
+  font-size:9px !important;
+  background:transparent !important;
+  border:none !important;
+  cursor:pointer;
+  transition:color 0.2s;
+}
+#my-themes-gallery [onclick*="delete"]:hover,
+#my-themes-gallery [onclick*="Delete"]:hover,
+#custom-fonts-gallery [onclick*="delete"]:hover,
+#custom-fonts-gallery [onclick*="Delete"]:hover,
+#wallpaper-gallery [onclick*="delete"]:hover,
+#wallpaper-gallery [onclick*="Delete"]:hover,
+#icon-presets-gallery [onclick*="delete"]:hover,
+#icon-presets-gallery [onclick*="Delete"]:hover,
+.gallery-box [class*="close"]:hover,
+.gallery-box [class*="delete"]:hover,
+.gallery-box [class*="del"]:hover{
+  color:rgba(166,153,138,0.55) !important;
+}
+/* 兜底：gallery内所有span/button含inline红色的强制覆盖 */
+.gallery-box span[style*="red"],
+.gallery-box span[style*="Red"],
+.gallery-box span[style*="#ff"],
+.gallery-box span[style*="#FF"],
+.gallery-box span[style*="#e74"],
+.gallery-box span[style*="#E74"],
+.gallery-box span[style*="rgb(255"],
+.gallery-box button[style*="red"],
+.gallery-box button[style*="#ff"],
+.gallery-box button[style*="#FF"],
+.gallery-box button[style*="rgb(255"]{
+  color:rgba(166,153,138,0.35) !important;
+  font-size:9px !important;
+  background:transparent !important;
+}
+/* theme.css 增加 */
+.wallpaper-thumb div {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    /* 确保不受全局消杀影响 */
+    background: rgba(0, 0, 0, 0.6) !important; 
+    color: #fff !important;
+}
