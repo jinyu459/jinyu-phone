@@ -213,37 +213,9 @@
 
   // ---- 调用 OpenAI 兼容接口（带一次瞬时失败重试） ----
   function doFetch(url, body, headers) {
-    // 关键修复：App 内 CapacitorHttp 会接管 window.fetch，导致 AbortController 失效、
-    // 请求永久悬挂（现象：一直转圈、永不报错）。因此：优先走 Capacitor 原生 HTTP，
-    // 它绕过 WebView 的 CORS，并原生支持 connect/read 超时，彻底避免卡死。
-    try {
-      var Cap = window.Capacitor;
-      var CapHttp = Cap && Cap.Plugins && Cap.Plugins.CapacitorHttp;
-      if (CapHttp && typeof CapHttp.request === 'function') {
-        return CapHttp.request({
-          method: 'POST',
-          url: url,
-          headers: headers,
-          data: body,
-          connectTimeout: 20000,
-          readTimeout: 25000
-        }).then(function (res) {
-          var status = (res && typeof res.status === 'number') ? res.status : 0;
-          var data = (res && ('data' in res)) ? res.data : null;
-          DBG.status = status;
-          DBG.preview = (typeof data === 'string' ? data : JSON.stringify(data || {})).slice(0, 200);
-          if (status === 0 || status >= 400) {
-            throw { status: status, data: data };
-          }
-          if (typeof data === 'string') {
-            try { return JSON.parse(data); } catch (e) { return {}; }
-          }
-          return data || {};
-        });
-      }
-    } catch (e0) {}
-
-    // 兜底：普通 fetch + Promise.race 硬超时（即使底层不支持 AbortController，也一定在 26 秒内返回）
+    // 修复：网页端用「普通 fetch」已实测成功（HTTP 200），故 App 也优先走普通 fetch，
+    // 与网页测试保持一致，避开 CapacitorHttp 接管 window.fetch 导致的悬挂。
+    // 若普通 fetch 因跨域/网络立即失败，再回退 Capacitor 原生 HTTP。
     var _ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var _timer = null;
     if (_ctrl) { _timer = setTimeout(function () { try { _ctrl.abort(); } catch (e) {} }, 25000); }
@@ -268,7 +240,33 @@
       setTimeout(function () { reject({ status: 0, message: 'timeout' }); }, 26000);
     });
 
-    return Promise.race([_fetchP, _timeoutP]);
+    // 普通 fetch 立即失败（网络/跨域）时回退原生 HTTP；超时则直接抛错
+    return Promise.race([_fetchP, _timeoutP]).catch(function (e) {
+      if (e && e.message === 'timeout') throw e;
+      try {
+        var Cap = window.Capacitor;
+        var CapHttp = Cap && Cap.Plugins && Cap.Plugins.CapacitorHttp;
+        if (CapHttp && typeof CapHttp.request === 'function') {
+          return CapHttp.request({
+            method: 'POST',
+            url: url,
+            headers: headers,
+            data: body,
+            connectTimeout: 20000,
+            readTimeout: 25000
+          }).then(function (res) {
+            var status = (res && typeof res.status === 'number') ? res.status : 0;
+            var data = (res && ('data' in res)) ? res.data : null;
+            DBG.status = status;
+            DBG.preview = (typeof data === 'string' ? data : JSON.stringify(data || {})).slice(0, 200);
+            if (status === 0 || status >= 400) { throw { status: status, data: data }; }
+            if (typeof data === 'string') { try { return JSON.parse(data); } catch (e) { return {}; } }
+            return data || {};
+          });
+        }
+      } catch (e2) {}
+      throw e;
+    });
   }
 
   function isTransient(status) {
