@@ -1408,23 +1408,46 @@ function exportChat() {
 }
 
 // ---- 发送消息 ----
-// ---- 可见调试条：把 LLM 请求/响应/错误直接显示在界面上 ----
+// ---- 可见调试条：仅在「调试模式」开启时显示 ----
+function isDebugModeOn() {
+    // 任一来源为 true / 'true' 即算开启（避免旧值盖新值）
+    var flag = false;
+    function hit(v) { return (v === true || v === 'true'); }
+    try { if (window.parent && window.parent.dataHub && typeof window.parent.dataHub.get === 'function') { if (hit(window.parent.dataHub.get('debug_mode', null))) flag = true; } } catch (e1) {}
+    try { if (window.dataHub && typeof window.dataHub.get === 'function') { if (hit(window.dataHub.get('debug_mode', null))) flag = true; } } catch (e2) {}
+    try { var s1 = localStorage.getItem('debug_mode'); if (s1 !== null) { var p1 = JSON.parse(s1); if (hit(p1) || hit(s1)) flag = true; } } catch (e3) {}
+    try { var s2 = localStorage.getItem('jinyu_debug_mode'); if (s2 !== null) { var p2 = JSON.parse(s2); if (hit(p2) || hit(s2)) flag = true; } } catch (e4) {}
+    return flag;
+}
 function llmDebugBar() {
     var el = document.getElementById('llmDebugBar');
     if (!el) {
         el = document.createElement('div');
         el.id = 'llmDebugBar';
-        el.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;background:rgba(0,0,0,0.86);color:#7CFFB2;font:12px/1.5 monospace;padding:8px 12px;max-height:52%;overflow:auto;white-space:pre-wrap;word-break:break-all;border-bottom:2px solid #7CFFB2;';
+        el.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;background:rgba(0,0,0,0.86);color:#7CFFB2;font:12px/1.5 monospace;padding:8px 12px;padding-right:46px;max-height:52%;overflow:auto;white-space:pre-wrap;word-break:break-all;border-bottom:2px solid #7CFFB2;';
+        var cls = document.createElement('button');
+        cls.textContent = '\u00d7';
+        cls.setAttribute('aria-label', '\u5173\u95ed\u8c03\u8bd5');
+        cls.style.cssText = 'position:absolute;right:8px;top:6px;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:#7CFFB2;color:#111;font-size:18px;font-weight:700;line-height:1;';
+        cls.onclick = function () { el.style.display = 'none'; };
+        var body = document.createElement('div');
+        body.className = 'llm-debug-body';
+        el.appendChild(body);
+        el.appendChild(cls);
+        el.__body = body;
         document.body.appendChild(el);
     }
+    el.style.display = 'block';
     return el;
 }
 window.__llmShowDebug = function (title, detail) {
     try {
+        if (!isDebugModeOn()) return;
         var el = llmDebugBar();
-        var line = '【' + title + '】' + (detail ? '\n' + detail : '');
-        el.textContent = line + '\n\n' + (el.textContent || '');
-        if (el.textContent.length > 5000) el.textContent = el.textContent.slice(0, 5000);
+        var body = el.__body || el;
+        var line = '\u3010' + title + '\u3011' + (detail ? '\n' + detail : '');
+        body.textContent = line + '\n\n' + (body.textContent || '');
+        if (body.textContent.length > 5000) body.textContent = body.textContent.slice(0, 5000);
     } catch (e) {}
 };
 

@@ -185,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentPresets = DataHubUtil.get('apiPresets', []);
     activePresetId = DataHubUtil.get('activeApiPresetId', null);
     renderPresetsList();
+    renderDebugToggle();
 
     // 初始化一言设置 (使用 dock_poem 键名)
  let savedPoem = DEFAULT_POEM;
@@ -558,6 +559,35 @@ async function fetchApiModels() {
 }
 
 
+
+// ===== 调试模式开关（默认关闭）=====
+function isDebugModeOn() {
+    // 任一来源为 true / 'true' 即算开启（避免旧值盖新值）
+    var flag = false;
+    function hit(v) { return (v === true || v === 'true'); }
+    try { if (window.parent && window.parent.dataHub && typeof window.parent.dataHub.get === 'function') { if (hit(window.parent.dataHub.get('debug_mode', null))) flag = true; } } catch (e1) {}
+    try { if (window.dataHub && typeof window.dataHub.get === 'function') { if (hit(window.dataHub.get('debug_mode', null))) flag = true; } } catch (e2) {}
+    try { var s1 = localStorage.getItem('debug_mode'); if (s1 !== null) { var p1 = JSON.parse(s1); if (hit(p1) || hit(s1)) flag = true; } } catch (e3) {}
+    try { var s2 = localStorage.getItem('jinyu_debug_mode'); if (s2 !== null) { var p2 = JSON.parse(s2); if (hit(p2) || hit(s2)) flag = true; } } catch (e4) {}
+    return flag;
+}
+function setDebugModeStore(on) {
+    var val = (on === true);
+    try { DataHubUtil.set('debug_mode', val); } catch (e1) {}
+    try { localStorage.setItem('debug_mode', JSON.stringify(val)); } catch (e2) {}
+    try { localStorage.setItem('jinyu_debug_mode', JSON.stringify(val)); } catch (e3) {}
+}
+function renderDebugToggle() {
+    var btn = document.getElementById('debug-mode-toggle');
+    if (!btn) return;
+    btn.textContent = isDebugModeOn() ? '已开启' : '已关闭';
+}
+function toggleDebugMode() {
+    var next = !isDebugModeOn();
+    setDebugModeStore(next);
+    renderDebugToggle();
+    try { if (typeof showSmokeMsg === 'function') showSmokeMsg('调试模式：' + (next ? '已开启' : '已关闭')); } catch (e) {}
+}
 
 function switchSettingsTab(tabId, element) {
     document.querySelectorAll('.settings-tab').forEach(tab => tab.classList.remove('active'));

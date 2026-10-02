@@ -1,5 +1,26 @@
 apply plugin: 'com.android.application'
 
+// ===== 固定签名（方案③）=====
+// 签名文件与密码一律从环境变量读取，绝不写入仓库。
+// 本地开发构建（assembleDebug）无需这些变量；CI 打 Release 包时必须提供，
+// 否则下面的“安全闸门”会直接报错，禁止回退到 debug 签名。
+def releaseKeystoreFile     = System.getenv("KEYSTORE_FILE")
+def releaseKeystorePassword = System.getenv("KEYSTORE_PASSWORD")
+def releaseKeyAlias         = System.getenv("KEY_ALIAS")
+def releaseKeyPassword      = System.getenv("KEY_PASSWORD")
+def hasReleaseSigning = (
+        releaseKeystoreFile     != null && !releaseKeystoreFile.trim().isEmpty() &&
+        releaseKeystorePassword != null && !releaseKeystorePassword.trim().isEmpty() &&
+        releaseKeyAlias         != null && !releaseKeyAlias.trim().isEmpty() &&
+        releaseKeyPassword      != null && !releaseKeyPassword.trim().isEmpty()
+)
+
+// versionCode 自动递增：CI 传入 -PappVersionCode=${{ github.run_number }}
+// 本地不传时回退到 1，保持原有行为。
+def injectedVersionCode = project.hasProperty("appVersionCode")
+        ? project.getProperty("appVersionCode").toString()
+        : (System.getenv("VERSION_CODE") ?: "1")
+
 android {
     namespace = "com.jinyu.phone"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,7 +28,7 @@ android {
         applicationId "com.jinyu.phone"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode injectedVersionCode.toInteger()
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -16,11 +37,35 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(releaseKeystoreFile)
+                storePassword releaseKeystorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+// ===== 安全闸门（方案③ 要求④）=====
+// 只要本次构建包含 release 任务却没有提供签名变量，就直接失败，
+// 绝不静默回退到 debug 签名（否则又会“每次签名不同、无法覆盖安装”）。
+gradle.taskGraph.whenReady { graph ->
+    def buildingRelease = graph.allTasks.any { it.name.toLowerCase().contains("release") }
+    if (buildingRelease && !hasReleaseSigning) {
+        throw new GradleException(
+                "缺少固定签名配置：请提供 KEYSTORE_FILE / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD 环境变量。禁止回退到 debug 签名。")
     }
 }
 

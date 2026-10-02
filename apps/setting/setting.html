@@ -114,6 +114,14 @@
                     <button class="jinyu-btn btn-danger" onclick="resetApp()">重置应用</button>
                 </div>
             </div>
+            <div class="jinyu-card">
+                <h3 class="card-title">高级</h3>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <span>调试模式</span>
+                    <button id="debug-mode-toggle" class="jinyu-btn btn-outline" onclick="toggleDebugMode()">已关闭</button>
+                </div>
+                <p style="font-size:12px;color:#999;margin:8px 0 0;">开启后，聊天页顶部将显示调试条（请求地址、状态码、返回内容），用于排查接口问题。默认关闭。</p>
+            </div>
         </div>
 
     </div> <!-- content-area 结束 -->
