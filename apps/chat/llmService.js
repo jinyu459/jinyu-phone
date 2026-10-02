@@ -28,6 +28,12 @@
     } catch (e) {}
   }
 
+  // ---- 可见调试：把 请求地址/模型/HTTP状态/返回前200字/完整错误 直接显示到界面 ----
+  var DBG = { url: '', model: '', status: null, preview: '' };
+  function dbg(title, detail) {
+    try { if (window.__llmShowDebug) window.__llmShowDebug(title, detail); } catch (e) {}
+  }
+
   // ---- 读取当前选中的 API 预设（多来源兜底） ----
   function parseJSON(str) {
     try { return JSON.parse(str); } catch (e) { return null; }
@@ -224,6 +230,8 @@
         }).then(function (res) {
           var status = (res && typeof res.status === 'number') ? res.status : 0;
           var data = (res && ('data' in res)) ? res.data : null;
+          DBG.status = status;
+          DBG.preview = (typeof data === 'string' ? data : JSON.stringify(data || {})).slice(0, 200);
           if (status === 0 || status >= 400) {
             throw { status: status, data: data };
           }
@@ -244,14 +252,13 @@
 
     var _fetchP = fetch(url, _opts).then(function (resp) {
       if (_timer) clearTimeout(_timer);
-      if (!resp.ok) {
-        var err = { status: resp.status };
-        return resp.json().catch(function () { return {}; }).then(function (j) {
-          err.data = j;
-          throw err;
-        });
-      }
-      return resp.json();
+      DBG.status = resp.status;
+      return resp.text().then(function (t) {
+        DBG.preview = String(t || '').slice(0, 200);
+        var j = null; try { j = JSON.parse(t); } catch (e) {}
+        if (!resp.ok) { throw { status: resp.status, data: j }; }
+        return j || {};
+      });
     }, function (e) {
       if (_timer) clearTimeout(_timer);
       throw e;
@@ -276,6 +283,7 @@
       var preset = opts.preset || getActivePreset();
       if (!preset || !preset.url || !preset.model) {
         var noPreset = { ok: false, error: 'no_preset', durationMs: Date.now() - startedAt };
+        dbg('⚠️ 未选中 API 预设', '请到「设置 → API 预设」选中一个模型再发消息');
         logCall({ ok: false, error: 'no_preset', durationMs: noPreset.durationMs });
         resolve(noPreset);
         return;
@@ -293,6 +301,8 @@
       }
       var url = _base + '/v1/chat/completions';
       try { console.log('[llmService] 实际请求地址:', url); } catch (e1) {}
+      DBG.url = url; DBG.model = preset.model; DBG.status = null; DBG.preview = '';
+      dbg('① 请求准备', '地址: ' + url + '\n模型: ' + preset.model + '\nKey: ' + (preset.key ? '已填(' + String(preset.key).slice(0, 6) + '...)' : '未填'));
 
       // 记忆：优先用原始 history 做压缩，否则退回 messages 数组
       var memorySummary = null;
@@ -333,6 +343,7 @@
             var text = data && data.choices && data.choices[0] &&
                        data.choices[0].message && data.choices[0].message.content;
             text = (text || '').trim();
+            dbg('③ 收到响应', 'HTTP: ' + DBG.status + '\n返回前200字: ' + (DBG.preview || '(空)'));
             var usage = (data && data.usage) || null;
             var durationMs = Date.now() - startedAt;
             if (text) {
@@ -352,6 +363,7 @@
           .catch(function (e) {
             var status = (e && e.status) ? e.status : 0;
             var errType = status === 0 ? 'network' : ('http_' + status);
+            dbg('❌ 请求失败', '类型: ' + errType + '\nHTTP: ' + status + '\n返回前200字: ' + (DBG.preview || '(无)') + '\n原始错误: ' + (e && e.message ? e.message : 'n/a'));
             if (isTransient(status) && attempts < maxAttempts) {
               setTimeout(attempt, 600);
             } else {

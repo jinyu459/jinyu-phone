@@ -1408,6 +1408,26 @@ function exportChat() {
 }
 
 // ---- 发送消息 ----
+// ---- 可见调试条：把 LLM 请求/响应/错误直接显示在界面上 ----
+function llmDebugBar() {
+    var el = document.getElementById('llmDebugBar');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'llmDebugBar';
+        el.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;background:rgba(0,0,0,0.86);color:#7CFFB2;font:12px/1.5 monospace;padding:8px 12px;max-height:52%;overflow:auto;white-space:pre-wrap;word-break:break-all;border-bottom:2px solid #7CFFB2;';
+        document.body.appendChild(el);
+    }
+    return el;
+}
+window.__llmShowDebug = function (title, detail) {
+    try {
+        var el = llmDebugBar();
+        var line = '【' + title + '】' + (detail ? '\n' + detail : '');
+        el.textContent = line + '\n\n' + (el.textContent || '');
+        if (el.textContent.length > 5000) el.textContent = el.textContent.slice(0, 5000);
+    } catch (e) {}
+};
+
 function sendMessage() {
     const input = getEl('inputField');
     if (!input) return;
@@ -1464,6 +1484,7 @@ function sendMessage() {
     };
     Store.messages.push(loadingMsg);
     appendMessage(loadingMsg);
+    try { if (window.__llmShowDebug) window.__llmShowDebug('发送消息', '联系人: ' + (Store.contact && Store.contact.name)); } catch (eD) {}
 
     setTimeout(function() {
         Store.messages = Store.messages.filter(function(m) { return m.id !== loadingId; });
