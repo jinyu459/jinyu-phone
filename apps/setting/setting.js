@@ -1,5 +1,5 @@
 // ================= 烟雾浮标接管系统 =================
-function showSmokeMsg(msg, isConfirm = false, onConfirm = null) {
+function showSmokeMsg(msg, isConfirm = false, onConfirm = null, autoClose = true) {
     // 如果已经有弹窗，先干掉
     let oldToast = document.getElementById('sys-smoke-toast');
     let oldMask = document.getElementById('sys-smoke-mask');
@@ -23,6 +23,12 @@ function showSmokeMsg(msg, isConfirm = false, onConfirm = null) {
             <div class="smoke-btns">
                 <button class="smoke-btn smoke-btn-cancel" id="smoke-cancel">取消</button>
                 <button class="smoke-btn smoke-btn-confirm" id="smoke-confirm">确定</button>
+            </div>
+        `;
+    } else if (!autoClose) {
+        html += `
+            <div class="smoke-btns">
+                <button class="smoke-btn smoke-btn-confirm" id="smoke-confirm">知道了</button>
             </div>
         `;
     }
@@ -53,6 +59,9 @@ function showSmokeMsg(msg, isConfirm = false, onConfirm = null) {
             closeToast();
             if (onConfirm) onConfirm();
         };
+    } else if (!autoClose) {
+        // 常驻提示：需手动点“知道了”关闭（导出结果等重要提示用）
+        document.getElementById('smoke-confirm').onclick = closeToast;
     } else {
         // 普通提示，2秒后如烟雾般消散
         setTimeout(closeToast, 2000);
@@ -776,6 +785,27 @@ async function exportBackup() {
         // 5. 导出为 JSON 文件
         const jsonStr = JSON.stringify(backup);
         const fileName = getNextBackupName();
+        // 导出通道统一走 nativeSaveFile（assets/js/nativeSave.js）：
+        // 本页跑在外壳 iframe 内，插件需逐层安全探测 window→parent→top；
+        // 原生走 Filesystem 写 Cache + 系统分享；纯浏览器兜底 a.download。
+        if (typeof nativeSaveFile !== 'function') {
+            showSmokeMsg('导出组件 nativeSave.js 未加载，请检查页面引入', false, null, false);
+            return;
+        }
+        let __saveChan = '';
+        try {
+            const __res = await nativeSaveFile({ fileName: fileName, data: jsonStr, mime: 'application/json', dialogTitle: '导出备份' });
+            __saveChan = (__res && __res.channel) || '';
+        } catch (e2) {
+            console.error('导出失败:', e2);
+            if (e2 && e2.stage === 'cancelled') {
+                showSmokeMsg('已取消导出', false, null, false);
+            } else {
+                showSmokeMsg('导出失败：' + ((e2 && e2.message) || e2), false, null, false);
+            }
+            return;
+        }
+        if (false) { // __LEGACY_EXPORT_BLOCK__ 旧实现已停用（nativeSaveFile 已接管），保留仅为对照
         // Capacitor 在无打包工具的页面里，通过原生注入的全局对象访问插件：
         //   window.Capacitor.Plugins.Filesystem / window.Capacitor.Plugins.Share
         // 若 window.Capacitor 不存在（纯浏览器）走下载兜底；
@@ -785,7 +815,7 @@ async function exportBackup() {
         const _FS = (_Cap && _Cap.Plugins && _Cap.Plugins.Filesystem) ? _Cap.Plugins.Filesystem : null;
         const _Share = (_Cap && _Cap.Plugins && _Cap.Plugins.Share) ? _Cap.Plugins.Share : null;
 
-        if (_isNative) {
+        if (false) {
             if (!_FS) {
                 showSmokeMsg('❌ 导出失败：未检测到 Filesystem 插件。请先安装并同步：npm i @capacitor/filesystem@^8 @capacitor/share@^8，然后 npx cap sync android');
                 return;
@@ -799,7 +829,7 @@ async function exportBackup() {
             } else {
                 showSmokeMsg('⚠️ 未检测到 Share 插件，无法调起分享。备份已写入缓存：' + uriRes.uri + '（安装：npm i @capacitor/share@^8 并 npx cap sync android）');
             }
-        } else {
+        } else if (false) {
             // 纯浏览器兜底：保留原下载方式
             const blob = new Blob([jsonStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -811,9 +841,10 @@ async function exportBackup() {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
+        } // __LEGACY_EXPORT_BLOCK__ 结束
         
         const fileCount = Object.keys(filesToExport).length;
-        showSmokeMsg(`✅ 备份成功！\n配置项: ${Object.keys(config).length}\n文件: ${fileCount}`);
+        showSmokeMsg(`✅ 备份成功！\n配置项: ${Object.keys(config).length}\n文件: ${fileCount}` + (__saveChan === 'browser' ? '\n（当前为浏览器环境，已走下载）' : ''), false, null, false);
         
     } catch (e) {
         console.error('导出失败:', e);

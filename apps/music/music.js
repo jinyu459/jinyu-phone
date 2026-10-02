@@ -1504,13 +1504,17 @@ function simulateExport() {
         }).then(canvas => {
             document.body.removeChild(cloneNode);
             
-            const link = document.createElement('a');
-            link.download = isFlipped ? '锦玉_成就印记.png' : '锦玉_诗意画卷.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            btn.innerText = '拓印留影';
-            btn.style.opacity = '1';
+            const dataUrl = canvas.toDataURL('image/png');
+            const base64 = dataUrl.split(',')[1] || '';
+            const restore = () => { btn.innerText = '拓印留影'; btn.style.opacity = '1'; };
+            if (typeof nativeSaveFile !== 'function') { restore(); showToast('导出组件未加载'); return; }
+            nativeSaveFile({ fileName: isFlipped ? '锦玉_成就印记.png' : '锦玉_诗意画卷.png', base64: base64, mime: 'image/png', dialogTitle: '拓印留影' })
+                .then(() => { restore(); showToast('拓印成功！'); })
+                .catch(err => {
+                    restore();
+                    if (err && err.stage === 'cancelled') { showToast('已取消'); return; }
+                    showToast('拓印失败：' + ((err && err.message) || err));
+                });
         }).catch(err => {
             document.body.removeChild(cloneNode);
             btn.innerText = '拓印失败';
@@ -1724,23 +1728,28 @@ function simulateExport() {
                 // 拍完立刻隐藏
                 document.getElementById('share-card-container').style.opacity = '0';
                 
-                // 触发下载
-                const link = document.createElement('a');
-                link.download = `锦玉_${pl.name}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                showToast('拓印成功！');
+                // 走统一导出通道（原生：写 Cache+分享；浏览器：下载）
+                const dataUrl = canvas.toDataURL('image/png');
+                const base64 = dataUrl.split(',')[1] || '';
+                if (typeof nativeSaveFile !== 'function') { showToast('导出组件未加载'); return; }
+                nativeSaveFile({ fileName: `锦玉_${pl.name}.png`, base64: base64, mime: 'image/png', dialogTitle: '拓印留影' })
+                    .then(() => {
+                        showToast('拓印成功！');
 
-                // 6. 核心：增加分享次数，触发合欢徽章！
-                let shareCount = parseInt(localStorage.getItem('jinyu_share_count') || '0');
-                shareCount++;
-                localStorage.setItem('jinyu_share_count', shareCount);
+                        // 6. 核心：增加分享次数，触发合欢徽章！
+                        let shareCount = parseInt(localStorage.getItem('jinyu_share_count') || '0');
+                        shareCount++;
+                        localStorage.setItem('jinyu_share_count', shareCount);
 
            // 触发“郁李”徽章
             checkBadgeProgress('f2');
 
-                checkBadgeProgress(); // 呼叫全知之眼检查进度
+                        checkBadgeProgress(); // 呼叫全知之眼检查进度
+                    })
+                    .catch(err => {
+                        if (err && err.stage === 'cancelled') { showToast('已取消'); return; }
+                        showToast('拓印失败：' + ((err && err.message) || err));
+                    });
                 
             }).catch(err => {
                 document.getElementById('share-card-container').style.opacity = '0';

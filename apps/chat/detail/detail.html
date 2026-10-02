@@ -802,6 +802,7 @@ body {
 <!-- ========== 所有脚本在 DOM 之后加载 ========== -->
 <script src="../eventBus.js"></script>
 <script src="../dataHub.js"></script>
+<script src="../../../assets/js/nativeSave.js"></script>
 <script src="../stores/maskStore.js"></script>
 <script src="../stores/contactStore.js"></script>
 <script src="../stores/chatStore.js"></script>
@@ -1397,14 +1398,15 @@ function exportChat() {
         messages: Store.messages,
         exportedAt: new Date().toISOString(),
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'chat_' + Store.contact.name + '_' + Date.now() + '.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('已导出');
+    const json = JSON.stringify(data, null, 2);
+    const fileName = 'chat_' + Store.contact.name + '_' + Date.now() + '.json';
+    if (typeof nativeSaveFile !== 'function') { showToast('导出组件未加载'); return; }
+    nativeSaveFile({ fileName: fileName, data: json, mime: 'application/json', dialogTitle: '导出聊天记录' })
+        .then(function () { showToast('已导出'); })
+        .catch(function (err) {
+            if (err && err.stage === 'cancelled') { showToast('已取消'); return; }
+            showToast('导出失败：' + ((err && err.message) || err));
+        });
 }
 
 // ---- 发送消息 ----
