@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>接口测试 · 锦玉</title>
+<style>
+:root{--bg:#f7f5f0;--fg:#2b2b2b;--acc:#8a6d3b;}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.6 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--fg);padding:16px;}
+h1{font-size:18px;margin:0 0 6px}
+p.sub{margin:0 0 16px;color:#777;font-size:13px}
+label{display:block;margin:12px 0 4px;font-size:13px;color:#555}
+input{width:100%;padding:10px;border:1px solid #d8d0c0;border-radius:8px;font-size:15px;background:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.chip{display:inline-block;padding:6px 10px;border:1px solid #d8d0c0;border-radius:16px;background:#fff;font-size:12px;color:#8a6d3b}
+button.go{width:100%;margin-top:18px;padding:14px;border:0;border-radius:10px;background:#8a6d3b;color:#fff;font-size:16px}
+button.go:active{opacity:.8}
+pre{margin-top:16px;background:#1e1e1e;color:#8ef0a8;padding:12px;border-radius:10px;white-space:pre-wrap;word-break:break-all;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;min-height:60px}
+</style>
+</head>
+<body>
+<h1>接口测试页</h1>
+<p class="sub">本页发送与 App「聊天」完全相同的请求，用来区分问题在「接口/Key/网络」还是「App 原生网络层」。手机浏览器打开本页即可测试。</p>
+
+<label>接口地址 (baseURL)</label>
+<input id="url" value="https://api.jumengai.net" autocapitalize="off" autocorrect="off" spellcheck="false">
+<div class="row">
+  <span class="chip" onclick="document.getElementById('url').value='https://api.jumengai.net'">jumengai</span>
+  <span class="chip" onclick="document.getElementById('url').value='https://hk-cache.xn--0xv303ar5c.com'">空白格</span>
+</div>
+
+<label>API Key</label>
+<input id="key" placeholder="sk-...（粘贴完整 Key）" autocapitalize="off" autocorrect="off" spellcheck="false">
+
+<label>模型名（从预设里原样复制）</label>
+<input id="model" placeholder="例如 [正向]DeepSeek-V4-Flash-0731" autocapitalize="off" autocorrect="off" spellcheck="false">
+
+<button class="go" onclick="runTest()">发送测试</button>
+<pre id="out">等待测试…</pre>
+
+<script>
+function normalize(u){
+  var s=String(u||'').trim().replace(/\/+$/,'');
+  var changed=true;
+  while(changed){
+    changed=false;
+    if(/\/chat\/completions$/.test(s)){s=s.replace(/\/chat\/completions$/,'');changed=true;}
+    if(/\/v1$/.test(s)){s=s.replace(/\/v1$/,'');changed=true;}
+  }
+  return s+'/v1/chat/completions';
+}
+function show(t){document.getElementById('out').textContent=t;}
+async function runTest(){
+  var url=normalize(document.getElementById('url').value);
+  var key=document.getElementById('key').value.trim();
+  var model=document.getElementById('model').value.trim();
+  var log='实际请求地址: '+url+'\n模型: '+model+'\nKey: '+(key?('已填('+key.slice(0,6)+'...)'):'未填')+'\n\n发送中…';
+  show(log);
+  var t0=Date.now();
+  try{
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ctrl.abort();},25000);
+    var resp=await fetch(url,{
+      method:'POST',
+      signal:ctrl.signal,
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:model,messages:[{role:'user',content:'你好'}],temperature:0.7})
+    });
+    clearTimeout(timer);
+    var txt=await resp.text();
+    var ms=Date.now()-t0;
+    log+='结果: '+(resp.ok?'✅ 成功':'❌ HTTP '+resp.status)+'\n耗时: '+ms+'ms\nHTTP状态码: '+resp.status+'\n返回前500字:\n'+(txt||'(空)').slice(0,500);
+    show(log);
+  }catch(e){
+    var ms2=Date.now()-t0;
+    log+='❌ 请求失败\n耗时: '+ms2+'ms\n错误: '+(e&&e.message?e.message:e)+'\n\n提示: 若是 Failed to fetch / CORS，多为该站未放开跨域或网络不通。';
+    show(log);
+  }
+}
+</script>
+</body>
+</html>
