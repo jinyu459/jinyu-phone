@@ -196,23 +196,76 @@ document.getElementById('dock-poem-input').value = savedPoem === DEFAULT_POEM ? 
 document.getElementById('dock-poem-preview').textContent = savedPoem;
 
     // 备份导入监听
-  document.getElementById('backup-import-input').addEventListener('change', async function(e) {
+  document.getElementById('backup-import-input').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
-    
+    showSmokeMsg('导入备份会覆盖当前数据；导入前会自动快照（最多保留 3 份，可"恢复到导入前"）。确定继续？', true, function() {
+        doBackupImport(file);
+    });
+    e.target.value = '';
+});
+
+async function doBackupImport(file) {
     showSmokeMsg('正在恢复备份...');
-    
     try {
         const text = await file.text();
-        const backup = JSON.parse(text);
-        
+        let backup;
+        try { backup = JSON.parse(text); }
+        catch (pe) { showSmokeMsg('❌ 导入失败：不是有效的 JSON 文件'); return; }
+        if (!backup || typeof backup !== 'object' || !backup.config || typeof backup.config !== 'object' || !backup.version) {
+            showSmokeMsg('❌ 导入失败：不是本应用的备份文件（缺少 version/config）');
+            return;
+        }
         const config = backup.config || {};
         const files = backup.files || {};
-        
         const fileDB = window.parent?.FileDB || window.FileDB;
-        
+
+        // 导入前快照：写失败则中止导入，绝不覆盖
+        const snapOk = await savePreImportSnapshot();
+        if (!snapOk) {
+            showSmokeMsg('❌ 快照保存失败，已中止导入（未覆盖任何数据）');
+            return;
+        }
+
+        // API Key 保留：备份中缺 Key 时，按 id（其次 name）匹配设备现有预设补回
+        try {
+            const existing = DataHubUtil.get('apiPresets', []) || [];
+            if (Array.isArray(config['apiPresets'])) {
+                let missing = 0;
+                config['apiPresets'] = config['apiPresets'].map(function(p) {
+                    if (!p || typeof p !== 'object') return p;
+                    if (p.key) return p;
+                    let match = existing.find(function(x) { return x && x.id && x.id === p.id; });
+                    if (!match && p.name) match = existing.find(function(x) { return x && x.name === p.name; });
+                    if (match && match.key) { const c = Object.assign({}, p); c.key = match.key; return c; }
+                    missing++;
+                    return p;
+                });
+                if (missing > 0) {
+                    setTimeout(function() {
+                        showSmokeMsg('提示：备份中 ' + missing + ' 个预设无 API Key，且设备上未找到可匹配项，已保留为空。');
+                    }, 900);
+                }
+            }
+
+            // activeApiPreset 是"完整预设对象"（含 key），聊天实际优先读它；同样按 id、其次 name 补回 Key
+            if (config['activeApiPreset'] && typeof config['activeApiPreset'] === 'object' && !config['activeApiPreset'].key) {
+                const ap = config['activeApiPreset'];
+                let m = existing.find(function(x) { return x && x.id && x.id === ap.id; });
+                if (!m && ap.name) m = existing.find(function(x) { return x && x.name === ap.name; });
+                if (!m && config['activeApiPresetId']) {
+                    m = existing.find(function(x) { return x && x.id === config['activeApiPresetId']; });
+                }
+                if (m && m.key) {
+                    const c = Object.assign({}, ap);
+                    c.key = m.key;
+                    config['activeApiPreset'] = c;
+                }
+            }
+        } catch (ke) { console.warn('API Key 保留失败:', ke); }
+
         // 1. 恢复配置到 dataHub
-        if (window.parent?.dataHub) {
+        if (window.parent && window.parent.dataHub) {
             for (let key in config) {
                 const value = config[key];
                 if (typeof window.parent.dataHub.set === 'function') {
@@ -222,7 +275,7 @@ document.getElementById('dock-poem-preview').textContent = savedPoem;
                 }
             }
         }
-        
+
         // 2. 恢复到 localStorage
         for (let key in config) {
             const value = config[key];
@@ -232,7 +285,7 @@ document.getElementById('dock-poem-preview').textContent = savedPoem;
                 localStorage.setItem(key, value);
             }
         }
-        
+
         // 3. 恢复文件到 FileDB
         if (fileDB) {
             for (let key in files) {
@@ -242,44 +295,45 @@ document.getElementById('dock-poem-preview').textContent = savedPoem;
                     const blob = await response.blob();
                     await fileDB.save(key, blob);
                 } catch (e) {
-                    console.warn(`恢复文件失败 ${key}:`, e);
+                    console.warn('恢复文件失败 ' + key + ':', e);
                 }
             }
         }
-        
+
         showSmokeMsg('✅ 恢复成功！');
-        
+
         // 4. 刷新 UI
         currentPresets = DataHubUtil.get('apiPresets', []);
         activePresetId = DataHubUtil.get('activeApiPresetId', null);
         renderPresetsList();
-        
+
         const importedPoem = DataHubUtil.get('dock_poem', DEFAULT_POEM);
         document.getElementById('dock-poem-input').value = importedPoem === DEFAULT_POEM ? '' : importedPoem;
         document.getElementById('dock-poem-preview').textContent = importedPoem;
-        
+
         // 5. 通知主屏幕刷新
         if (window.parent) {
             window.parent.postMessage({ type: 'backupRestored' }, '*');
-            setTimeout(() => {
+            setTimeout(function() {
                 window.parent.postMessage({ type: 'applyIconImages' }, '*');
                 window.parent.postMessage({ type: 'applyIconNames' }, '*');
                 window.parent.postMessage({ type: 'changeFont' }, '*');
-                window.parent.postMessage({ 
-                    type: 'changeWallpaper', 
-                    wallpaper: config['jinyu_wallpaper'] || 'default', 
-                    customImg: config['jinyu_custom_wallpaper'] || null 
+                window.parent.postMessage({
+                    type: 'changeWallpaper',
+                    wallpaper: config['jinyu_wallpaper'] || 'default',
+                    customImg: config['jinyu_custom_wallpaper'] || null
                 }, '*');
             }, 200);
         }
-        
+
+        // 6. 导入后整页刷新，以重新读取最新数据为准
+        setTimeout(function() { (window.top || window).location.reload(); }, 900);
+
     } catch (error) {
         console.error('导入失败:', error);
-        showSmokeMsg('❌ 导入失败：文件格式不正确或已损坏');
+        showSmokeMsg('❌ 导入失败：文件格式不正确或已损坏（可点『恢复到导入前』撤销本次导入）');
     }
-    
-    e.target.value = '';
-});
+}
 });
 
 
@@ -645,26 +699,8 @@ async function exportBackup() {
     try {
         const fileDB = window.parent?.FileDB || window.FileDB;
         
-        // 1. 收集所有配置数据
-        const config = {};
-        
-        if (window.parent?.dataHub) {
-            for (let key in window.parent.dataHub) {
-                if (typeof window.parent.dataHub[key] !== 'function') {
-                    config[key] = window.parent.dataHub[key];
-                }
-            }
-        }
-        
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith('JinyuPhone_')) continue;
-            try {
-                config[key] = JSON.parse(localStorage.getItem(key));
-            } catch {
-                config[key] = localStorage.getItem(key);
-            }
-        }
+        // 1. 收集所有配置数据（复用统一收集逻辑，与导入前快照完全一致）
+        const config = collectBackupConfig();
         
         // 2. 找出所有需要从 FileDB 导出的文件
         const filesToExport = {};
@@ -698,6 +734,37 @@ async function exportBackup() {
             }
         }
         
+        // 3.5 按勾选剔除 API Key（默认不含）。覆盖所有 *apiPreset* 键（含 jinyu_ 前缀变体）。
+        try {
+            const includeKey = document.getElementById('backup-include-key') && document.getElementById('backup-include-key').checked;
+            if (!includeKey) {
+                // 说明：jinyu_app_data（DataHub 主存档）本身不含 API Key；Key 只存在于独立的
+                // apiPresets / activeApiPreset（及 jinyu_ 前缀变体）这些 localStorage 键中。
+                Object.keys(config).forEach(function(k) {
+                    if (k.toLowerCase().indexOf('apipreset') === -1) return;
+                    // export 收集 config 时已对 localStorage 值 JSON.parse，故此处通常是对象/数组；
+                    // 为稳妥，若遇到字符串则先解析、剔除后再按原样序列化回字符串。
+                    let v = config[k];
+                    let wasString = false;
+                    if (typeof v === 'string') {
+                        try { v = JSON.parse(v); wasString = true; } catch (e2) { return; }
+                    }
+                    let stripped;
+                    if (Array.isArray(v)) {
+                        stripped = v.map(function(p) {
+                            if (p && typeof p === 'object') { const c = Object.assign({}, p); delete c.key; return c; }
+                            return p;
+                        });
+                    } else if (v && typeof v === 'object') {
+                        const c = Object.assign({}, v); delete c.key; stripped = c;
+                    } else {
+                        return;
+                    }
+                    config[k] = wasString ? JSON.stringify(stripped) : stripped;
+                });
+            }
+        } catch (e) { console.warn('剔除 API Key 失败:', e); }
+
         // 4. 构建备份对象
         const backup = {
             version: '3.0',
@@ -708,16 +775,42 @@ async function exportBackup() {
         
         // 5. 导出为 JSON 文件
         const jsonStr = JSON.stringify(backup);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = getNextBackupName();  // 直接用 .json
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const fileName = getNextBackupName();
+        // Capacitor 在无打包工具的页面里，通过原生注入的全局对象访问插件：
+        //   window.Capacitor.Plugins.Filesystem / window.Capacitor.Plugins.Share
+        // 若 window.Capacitor 不存在（纯浏览器）走下载兜底；
+        // 若处于原生环境却拿不到插件（未安装/未 sync），弹出明确错误，绝不静默失败。
+        const _Cap = window.Capacitor;
+        const _isNative = !!(_Cap && typeof _Cap.isNativePlatform === 'function' && _Cap.isNativePlatform());
+        const _FS = (_Cap && _Cap.Plugins && _Cap.Plugins.Filesystem) ? _Cap.Plugins.Filesystem : null;
+        const _Share = (_Cap && _Cap.Plugins && _Cap.Plugins.Share) ? _Cap.Plugins.Share : null;
+
+        if (_isNative) {
+            if (!_FS) {
+                showSmokeMsg('❌ 导出失败：未检测到 Filesystem 插件。请先安装并同步：npm i @capacitor/filesystem@^8 @capacitor/share@^8，然后 npx cap sync android');
+                return;
+            }
+            // 原生：先写入 Cache 目录，再调用系统分享
+            const cachePath = 'backups/' + fileName;
+            await _FS.writeFile({ path: cachePath, data: jsonStr, directory: 'CACHE', encoding: 'utf8', recursive: true });
+            const uriRes = await _FS.getUri({ path: cachePath, directory: 'CACHE' });
+            if (_Share && typeof _Share.share === 'function') {
+                await _Share.share({ title: fileName, url: uriRes.uri, dialogTitle: '导出备份' });
+            } else {
+                showSmokeMsg('⚠️ 未检测到 Share 插件，无法调起分享。备份已写入缓存：' + uriRes.uri + '（安装：npm i @capacitor/share@^8 并 npx cap sync android）');
+            }
+        } else {
+            // 纯浏览器兜底：保留原下载方式
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
         
         const fileCount = Object.keys(filesToExport).length;
         showSmokeMsg(`✅ 备份成功！\n配置项: ${Object.keys(config).length}\n文件: ${fileCount}`);
@@ -727,6 +820,135 @@ async function exportBackup() {
         showSmokeMsg('❌ 导出失败');
     }
 }
+// ================= 备份快照 / 恢复 =================
+const BACKUP_SNAP_DIR = 'backup_snapshots';
+const BACKUP_SNAP_MAX = 3;
+const BACKUP_SNAP_LS_KEY = 'jinyu_preimport_snapshots';
+
+// 统一的配置收集逻辑（与导出、导入前快照共用，保证两边一致）
+function collectBackupConfig() {
+    const config = {};
+    const EXCLUDED = function(k) {
+        return k === 'jinyu_app_data_corrupt_backup'
+            || k.indexOf('jinyu_preimport_snapshot') === 0
+            || k === 'backup_snapshots';
+    };
+    if (window.parent && window.parent.dataHub) {
+        for (let key in window.parent.dataHub) {
+            if (typeof window.parent.dataHub[key] === 'function') continue;
+            if (EXCLUDED(key)) continue;
+            config[key] = window.parent.dataHub[key];
+        }
+    }
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('JinyuPhone_')) continue;
+        if (EXCLUDED(key)) continue;
+        try {
+            config[key] = JSON.parse(localStorage.getItem(key));
+        } catch (e) {
+            config[key] = localStorage.getItem(key);
+        }
+    }
+    return config;
+}
+
+function _backupFS() {
+    const Cap = window.Capacitor;
+    return (Cap && Cap.Plugins && Cap.Plugins.Filesystem) ? Cap.Plugins.Filesystem : null;
+}
+
+async function savePreImportSnapshot() {
+    const FS = _backupFS();
+    if (!FS) {
+        // 无原生文件系统：退化为 localStorage 快照（最多 3 份，仅配置不含大文件）
+        try {
+            const all = collectBackupConfig();
+            const list = JSON.parse(localStorage.getItem(BACKUP_SNAP_LS_KEY) || '[]');
+            list.unshift({ time: new Date().toISOString(), config: all });
+            while (list.length > BACKUP_SNAP_MAX) list.pop();
+            localStorage.setItem(BACKUP_SNAP_LS_KEY, JSON.stringify(list));
+            return true;
+        } catch (e) {
+            console.error('快照失败(localStorage):', e);
+            return false;
+        }
+    }
+    try {
+        const all = collectBackupConfig();
+        const payload = JSON.stringify({ time: new Date().toISOString(), config: all });
+        await FS.mkdir({ path: BACKUP_SNAP_DIR, directory: 'DATA', recursive: true }).catch(function(){});
+        const name = BACKUP_SNAP_DIR + '/snapshot_' + Date.now() + '.json';
+        await FS.writeFile({ path: name, data: payload, directory: 'DATA', encoding: 'utf8', recursive: true });
+        const rd = await FS.readdir({ path: BACKUP_SNAP_DIR, directory: 'DATA' });
+        const snaps = (rd.files || []).map(function(f) { return f.name || f; })
+            .filter(function(n) { return n.indexOf('snapshot_') === 0; }).sort();
+        while (snaps.length > BACKUP_SNAP_MAX) {
+            const old = snaps.shift();
+            await FS.deleteFile({ path: BACKUP_SNAP_DIR + '/' + old, directory: 'DATA' }).catch(function(){});
+        }
+        return true;
+    } catch (e) {
+        console.error('快照失败(native):', e);
+        return false;
+    }
+}
+
+function applyBackupConfig(config) {
+    if (!config || typeof config !== 'object') return;
+    if (window.parent && window.parent.dataHub) {
+        for (let key in config) {
+            const value = config[key];
+            if (typeof window.parent.dataHub.set === 'function') {
+                window.parent.dataHub.set(key, value);
+            } else {
+                window.parent.dataHub[key] = value;
+            }
+        }
+    }
+    for (let key in config) {
+        const value = config[key];
+        if (typeof value === 'object') {
+            localStorage.setItem(key, JSON.stringify(value));
+        } else {
+            localStorage.setItem(key, value);
+        }
+    }
+}
+
+async function restorePreImportSnapshot() {
+    showSmokeMsg('确定要恢复到导入前的数据吗？当前数据将被覆盖。\n注意：快照只含配置数据，不含 FileDB 里的墙纸等文件，恢复后这些文件不会回来。', true, async function() {
+        const FS = _backupFS();
+        if (!FS) {
+            try {
+                const list = JSON.parse(localStorage.getItem(BACKUP_SNAP_LS_KEY) || '[]');
+                if (!list.length) { showSmokeMsg('没有可用的导入前快照'); return; }
+                applyBackupConfig(list[0].config || {});
+                showSmokeMsg('✅ 已恢复到导入前');
+                setTimeout(function() { (window.top || window).location.reload(); }, 900);
+            } catch (e) {
+                showSmokeMsg('❌ 恢复失败：' + (e.message || '未知错误'));
+            }
+            return;
+        }
+        try {
+            const rd = await FS.readdir({ path: BACKUP_SNAP_DIR, directory: 'DATA' });
+            const snaps = (rd.files || []).map(function(f) { return f.name || f; })
+                .filter(function(n) { return n.indexOf('snapshot_') === 0; }).sort();
+            if (!snaps.length) { showSmokeMsg('没有可用的导入前快照'); return; }
+            const latest = snaps[snaps.length - 1];
+            const res = await FS.readFile({ path: BACKUP_SNAP_DIR + '/' + latest, directory: 'DATA', encoding: 'utf8' });
+            const data = JSON.parse(res.data);
+            applyBackupConfig(data.config || {});
+            showSmokeMsg('✅ 已恢复到导入前');
+            setTimeout(function() { (window.top || window).location.reload(); }, 900);
+        } catch (e) {
+            console.error('恢复失败:', e);
+            showSmokeMsg('❌ 恢复失败：' + (e.message || '未知错误'));
+        }
+    });
+}
+
 // ================= 危险操作逻辑 =================
 function clearCache() { 
     if (confirm('确定要清除缓存吗？这会清理临时数据，但不会删除您的 API 预设和核心设置。')) {

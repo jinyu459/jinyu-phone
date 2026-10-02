@@ -1907,7 +1907,25 @@ function bindEvents() {
                     });
                 } else if (action === 'deleteContact') {
                     showModal('删除联系人', '确定要删除 ' + Store.contact.name + ' 吗？', { danger: true }).then(function(ok) {
-                        if (ok) showToast('已删除');
+                        if (!ok) return;
+                        var cid = Store._contactId || (Store.contact && Store.contact.id);
+                        if (!window.contactStore) {
+                            showToast('删除失败');
+                            return;
+                        }
+                        var delOk = false;
+                        try {
+                            delOk = window.contactStore.delete(cid) === true && !window.contactStore.get(cid);
+                        } catch (err) {
+                            console.error('删除联系人失败:', err);
+                            delOk = false;
+                        }
+                        if (!delOk) {
+                            showToast('删除失败');
+                            return;
+                        }
+                        showToast('已删除');
+                        setTimeout(function () { window.location.href = '../index.html'; }, 300);
                     });
                 } else if (action === 'test') {
                     showTestPanel();
@@ -2388,7 +2406,25 @@ function bindEvents() {
         rowDeleteContact.addEventListener('click', function() {
             hideSettings();
             showModal('删除联系人', '确定要删除 ' + Store.contact.name + ' 吗？', { danger: true }).then(function(ok) {
-                if (ok) showToast('已删除');
+                if (!ok) return;
+                var cid = Store._contactId || (Store.contact && Store.contact.id);
+                if (!window.contactStore) {
+                    showToast('删除失败');
+                    return;
+                }
+                var delOk = false;
+                try {
+                    delOk = window.contactStore.delete(cid) === true && !window.contactStore.get(cid);
+                } catch (err) {
+                    console.error('删除联系人失败:', err);
+                    delOk = false;
+                }
+                if (!delOk) {
+                    showToast('删除失败');
+                    return;
+                }
+                showToast('已删除');
+                setTimeout(function () { window.location.href = '../index.html'; }, 300);
             });
         });
     }

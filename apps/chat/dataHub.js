@@ -22,20 +22,8 @@ const DataHub = {
                 relations: { nodes: [], edges: [] },
                 wallet: { baseAmount: 250.5, dynamicDelta: 0, balance: 250.5, ledger: [], pending: [] },
                 outfitPrefs: { style: '休闲/校园', favoriteColors: ['#7cb342'], scenes: ['校园'] },
-                contacts: [
-                    {
-                        id: 'ai_friend_1',
-                        name: '小鱼',
-                        avatar: '',
-                        lastMessage: '作业写完了吗？',
-                        timestamp: Date.now()
-                    }
-                ],
-                chatHistory: {
-                    ai_friend_1: [
-                        { id: 'msg_1', sender: '对方', type: 'text', content: '作业写完了吗？', time: '10:00' }
-                    ]
-                }
+                contacts: [],
+                chatHistory: {}
             },
             songzhi: {
                 id: 'songzhi',
@@ -50,20 +38,8 @@ const DataHub = {
                 relations: { nodes: [], edges: [] },
                 wallet: { baseAmount: 88888, dynamicDelta: 0, balance: 88888, ledger: [], pending: [] },
                 outfitPrefs: { style: '职场/干练', favoriteColors: ['#7fa8c9'], scenes: ['通勤'] },
-                contacts: [
-                    {
-                        id: 'business_1',
-                        name: 'Mr. Smith',
-                        avatar: '',
-                        lastMessage: 'Meeting at 10 AM.',
-                        timestamp: Date.now()
-                    }
-                ],
-                chatHistory: {
-                    business_1: [
-                        { id: 'msg_1', sender: '对方', type: 'text', content: 'Meeting at 10 AM.', time: '09:00' }
-                    ]
-                }
+                contacts: [],
+                chatHistory: {}
             }
         },
         avatarLibrary: { contacts: [] },
@@ -299,16 +275,27 @@ const DataHub = {
 
     load() {
         const savedData = localStorage.getItem('jinyu_app_data');
+        let parsedOk = true;
         if (savedData) {
             try {
                 const loadedState = JSON.parse(savedData);
                 this.state = this._deepMerge(this.state, loadedState);
             } catch (e) {
+                // 存档损坏：先把原字符串另存到备份键，再继续（不覆盖原数据，跳过 save）
+                try {
+                    localStorage.setItem('jinyu_app_data_corrupt_backup', savedData);
+                    console.warn('存档解析失败，原字符串已备份到 jinyu_app_data_corrupt_backup');
+                } catch (be) {
+                    console.error('备份损坏存档失败:', be);
+                }
+                parsedOk = false;
                 console.error('数据加载失败:', e);
             }
         }
         this.ensureStateShape();
-        this.save();
+        if (parsedOk) {
+            this.save();
+        }
     },
 
     save() {
