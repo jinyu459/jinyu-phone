@@ -1601,7 +1601,8 @@ function init() {
 
     // 恢复聊天壁纸
 try {
-    var savedWallpaper = localStorage.getItem('jy_chat_wallpaper');
+    var __wpKey = 'jy_chat_wallpaper_' + (Store._contactId || getContactIdFromUrl() || 'default');
+    var savedWallpaper = localStorage.getItem(__wpKey);
     if (savedWallpaper) {
         Store.chatWallpaper = savedWallpaper;
         var app = document.getElementById('app');
@@ -2262,7 +2263,14 @@ function bindEvents() {
                 var file = e.target.files[0];
                 if (!file) return;
                 compressImage(file, 50, function(compressedData) {
-                    if (window.settingsStore) {
+                    if (window.DataHub && typeof DataHub.setActiveAvatar === 'function') {
+                        DataHub.setActiveAvatar(compressedData);
+                        Store.contact.myAvatar = compressedData;
+                        renderMessages();
+                        if (typeof window.renderUserProfile === 'function') window.renderUserProfile();
+                        if (typeof window.refreshAllAvatars === 'function') window.refreshAllAvatars();
+                        showToast('我的头像已更新');
+                    } else if (window.settingsStore) {
                         window.settingsStore.updateStyle({ avatar: compressedData });
                         Store.contact.myAvatar = compressedData;
                         renderMessages();
@@ -2320,7 +2328,7 @@ function bindEvents() {
                         app.style.backgroundPosition = 'center';
                     }
                     try {
-                        localStorage.setItem('jy_chat_wallpaper', compressedData);
+                        localStorage.setItem('jy_chat_wallpaper_' + (Store._contactId || (Store.contact && Store.contact.id) || 'default'), compressedData);
                     } catch(e) {
                         showToast('壁纸保存失败，图片太大');
                     }

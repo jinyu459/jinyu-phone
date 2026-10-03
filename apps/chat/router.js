@@ -49,7 +49,9 @@ let currentActiveMainPageId = 'page-chuanshu';  // ← 改成传书
             }
             ['jinyu', 'songzhi'].forEach(maskId => {
                 const mask = window.maskStore ? window.maskStore.getMask(maskId) : DataHub.state.masks[maskId];
-                if (!mask || !Array.isArray(mask.contacts)) return;
+                if (!mask) return;
+                if (mask.avatar && mask.avatar.includes('unsplash.com')) mask.avatar = '';
+                if (!Array.isArray(mask.contacts)) return;
                 mask.contacts.forEach(c => {
                     if (c.avatar && c.avatar.includes('unsplash.com')) c.avatar = '';
                 });

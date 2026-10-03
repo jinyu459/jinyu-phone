@@ -11,7 +11,7 @@
         userNameElement.textContent = mask.name || '';
         userNameElement.style.color = mask.themeColor || 'var(--text-color)';
 
-        const avatar = style.avatar;
+        const avatar = DataHub.getActiveAvatar();
         const isIllegalLink = (url) => !url || String(url).includes('unsplash.com');
         if (!isIllegalLink(avatar)) {
             userAvatarElement.innerHTML = `<img src="${avatar}" alt="user avatar">`;

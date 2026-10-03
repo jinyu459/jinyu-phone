@@ -327,6 +327,26 @@ const DataHub = {
         return this.ensureMaskShape(mask);
     },
 
+    // 统一头像源：以“当前启用人设”的头像为准（mask.avatar）。
+    // 老数据兼容：若启用人设没有头像，则回退到全局 currentStyle.avatar。
+    getActiveAvatar() {
+        const mask = this.getActiveMask();
+        if (mask && mask.avatar) return mask.avatar;
+        return (this.state.currentStyle && this.state.currentStyle.avatar) || '';
+    },
+
+    // 写入统一头像源：同时写 mask.avatar（唯一源）与 currentStyle.avatar（兼容镜像，供旧代码读取）。
+    setActiveAvatar(dataUrl) {
+        const maskId = this.state.activeMaskId;
+        if (this.state.masks[maskId]) {
+            this.state.masks[maskId].avatar = dataUrl || null;
+        }
+        if (!this.state.currentStyle) this.state.currentStyle = {};
+        this.state.currentStyle.avatar = dataUrl || '';
+        this.save();
+        return true;
+    },
+
     getMask(maskId) {
         return this.state.masks[maskId] ? this.ensureMaskShape(this.state.masks[maskId]) : null;
     },

@@ -228,8 +228,7 @@
                 DataHub.switchMask(p.id);
                 
                 const activeMask = DataHub.getActiveMask();
-                const avatarToUse = activeMask.avatar || '';
-                DataHub.updateStyle({ avatar: avatarToUse });
+                DataHub.setActiveAvatar((activeMask && activeMask.avatar) || '');
                 
                 if (typeof window.renderUserProfile === 'function') window.renderUserProfile();
                 if (typeof window.renderContactList === 'function') window.renderContactList();
@@ -339,7 +338,7 @@
             DataHub.save();
             renderAllEnvelopes(getSearchValue());
             if (currentEditId === DataHub.state.activeMaskId) {
-                DataHub.updateStyle({ avatar: backupMaskState.avatar || '' });
+                DataHub.setActiveAvatar(backupMaskState.avatar || '');
                 if (typeof window.renderUserProfile === 'function') window.renderUserProfile();
                 if (typeof window.renderContactList === 'function') window.renderContactList();
             }
@@ -400,7 +399,9 @@
             const wasActive = currentEditId === DataHub.state.activeMaskId;
             closeEditPanel(false);
             renderAllEnvelopes(getSearchValue());
-            DataHub.updateStyle({ avatar: p.avatar || '' });
+            if (wasActive) {
+                DataHub.setActiveAvatar(p.avatar || '');
+            }
             if (typeof window.renderUserProfile === 'function') window.renderUserProfile();
             if (typeof window.renderContactList === 'function') window.renderContactList();
             if (typeof window.refreshWalletUI === 'function') window.refreshWalletUI();
