@@ -229,7 +229,7 @@
 
     document.getElementById('playlist-cover-upload').addEventListener('change', function(event) {
         const file = event.target.files[0];
-        if (file) { const reader = new FileReader(); reader.onload = function(e) { tempCustomImage = e.target.result; tempSelectedCoverIndex = 0; renderCoverGrid(); }; reader.readAsDataURL(file); }
+        if (file) { compressImgFile(file, 400, 100, function(dataUrl) { if(!dataUrl) { showToast('封面读取失败，请换一张试试'); return; } tempCustomImage = dataUrl; tempSelectedCoverIndex = 0; renderCoverGrid(); }); }
         event.target.value = '';
     });
 
@@ -783,7 +783,7 @@
         document.getElementById('stat-total-hours').innerText = (totalMin / 60).toFixed(1);
     }
 
-    document.getElementById('avatar-upload').addEventListener('change', function(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = function(e) { const imgBase64 = e.target.result; updateAvatars(imgBase64); localStorage.setItem('jinyu_avatar', imgBase64); }; reader.readAsDataURL(file); } event.target.value = ''; });
+    document.getElementById('avatar-upload').addEventListener('change', function(event) { const file = event.target.files[0]; if (file) { compressImgFile(file, 300, 50, function(imgBase64) { if(!imgBase64) { showToast('头像读取失败，请换一张试试'); return; } updateAvatars(imgBase64); try { localStorage.setItem('jinyu_avatar', imgBase64); } catch(e) { showToast('头像保存失败：存储空间不足'); } }); } event.target.value = ''; });
     function updateAvatars(imgSrc) { document.getElementById('user-avatar-img').src = imgSrc; const playerAvatarImg = document.getElementById('player-avatar-img'); playerAvatarImg.src = imgSrc; playerAvatarImg.style.display = 'block'; document.getElementById('player-avatar-text').style.display = 'none'; }
     function editProfileText(elementId, inputClass, defaultText, storageKey) { const textElement = document.getElementById(elementId); if (textElement.querySelector('input')) return; const currentText = textElement.innerText; const input = document.createElement('input'); input.type = 'text'; input.className = `edit-input ${inputClass}`; input.value = (currentText === defaultText) ? '' : currentText; input.placeholder = defaultText; textElement.innerHTML = ''; textElement.appendChild(input); input.focus(); const saveText = () => { const newVal = input.value.trim(); textElement.innerHTML = newVal || defaultText; if (newVal) localStorage.setItem(storageKey, newVal); else localStorage.removeItem(storageKey); }; input.addEventListener('keypress', e => { if (e.key === 'Enter') saveText(); }); input.addEventListener('blur', saveText); }
 
@@ -1124,6 +1124,41 @@
 
 
 // ==========================================
+// 【2026-10-13 批次D】图片压缩助手：统一把上传图片压到 maxPx 以内，
+// 质量逐步下调直至小于 maxSizeKB，防止原图直接存档把 localStorage 撑爆
+// ==========================================
+function compressImgFile(file, maxPx, maxSizeKB, callback) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            let w = img.width, h = img.height;
+            if (w > maxPx || h > maxPx) {
+                if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+                else { w = Math.round(w * maxPx / h); h = maxPx; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff'; // JPEG 不支持透明，先铺白底，防透明 PNG 导出后变黑
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            let quality = 0.85;
+            let dataUrl = canvas.toDataURL('image/jpeg', quality);
+            while (dataUrl.length > maxSizeKB * 1024 && quality > 0.3) {
+                quality -= 0.1;
+                dataUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+            callback(dataUrl);
+        };
+        img.onerror = function() { callback(null); };
+        img.src = e.target.result;
+    };
+    reader.onerror = function() { callback(null); };
+    reader.readAsDataURL(file);
+}
+
+// ==========================================
 // 真实徽章数据中心
 // ==========================================
 const defaultBadgeData = {
@@ -1136,7 +1171,12 @@ if (!badgeUserData.equipped) badgeUserData.equipped = [];
 // 【2026-10-13 修复 #10a】已删除此处「每次进页面强制清空荣誉墙并保存」的调试遗留代码，佩戴的徽章现在会正常保留。
 
 function saveBadgeData() {
-    localStorage.setItem('jinyu_badge_data', JSON.stringify(badgeUserData));
+    try {
+        localStorage.setItem('jinyu_badge_data', JSON.stringify(badgeUserData));
+    } catch(e) {
+        // 【2026-10-13 批次D】存档写不进去时明确提示，不再悄悄丢徽章
+        showToast('存储空间不足，徽章可能无法保存，请删除部分画轴或图片');
+    }
 }
 
     function checkBadgeProgress(specificId = null) {
@@ -1667,7 +1707,7 @@ function simulateExport() {
     function triggerJnUpload() { document.getElementById('jn-upload-input').click(); }
     function handleJnUpload(e) {
         const file = e.target.files[0];
-        if(file) { const reader = new FileReader(); reader.onload = (e) => { tempCustomImg = e.target.result; document.querySelector('.jn-upload-box').innerHTML = `<img src="${tempCustomImg}" style="width:100%;height:100%;object-fit:cover;">`; }; reader.readAsDataURL(file); }
+        if(file) { compressImgFile(file, 300, 50, function(dataUrl) { if(!dataUrl) { showToast('图片读取失败，请换一张试试'); return; } tempCustomImg = dataUrl; document.querySelector('.jn-upload-box').innerHTML = `<img src="${tempCustomImg}" style="width:100%;height:100%;object-fit:cover;">`; }); }
     }
     
     function saveCustomBadge() {
@@ -2154,12 +2194,18 @@ async function applyFonts() {
     window.addEventListener('DOMContentLoaded', () => {
     // 清理幽灵徽章：过滤掉 equipped 里已不存在的 ID
     if (badgeUserData.equipped) {
+        const customList = badgeUserData.customBadges || [];
         const allValidIds = [
             ...badgeSeries.flatMap(s => s.badges.map(b => b.id)),
-            ...badgeUserData.customBadges.map(b => b.id)
+            ...customList.map(b => b.id)
         ];
-        badgeUserData.equipped = badgeUserData.equipped.filter(id => allValidIds.includes(id));
-        saveBadgeData();
+        // 【2026-10-13 批次D】保险：荣誉墙上挂着画轴、但画轴列表却是空的（档案损坏信号），
+        // 此时跳过清理——宁可多留，也绝不误删佩戴记录
+        const hasCustomOnWall = badgeUserData.equipped.some(id => typeof id === 'string' && id.charAt(0) === 'c');
+        if (!(hasCustomOnWall && customList.length === 0)) {
+            badgeUserData.equipped = badgeUserData.equipped.filter(id => allValidIds.includes(id));
+            saveBadgeData();
+        }
     }
     
     const savedAvatar = localStorage.getItem('jinyu_avatar'); 
@@ -2169,6 +2215,7 @@ async function applyFonts() {
         renderMainPlaylists();
         loadStats();
         checkBadgeProgress();
+        renderHonorWall(); // 【2026-10-13 批次D】进页面立刻渲染荣誉墙：此前只在佩戴/取下瞬间渲染，导致重进页面后数据还在、墙上一片空（看着像徽章丢了）
         restorePlaybackState(); // 恢复上次播放进度：加载好、停在上次位置、等用户点播放
         window.addEventListener('beforeunload', savePlaybackState); // 退出时再兜底记一次
 
