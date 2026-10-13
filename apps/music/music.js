@@ -290,6 +290,7 @@
             await FileDB.remove(song.id);
         }
         appData.playlists = appData.playlists.filter(p => p.id !== isEditingPlaylistId);
+        try { const st = JSON.parse(localStorage.getItem('jinyu_playback_state')); if (st && st.plId === isEditingPlaylistId) clearPlaybackState(); } catch(e) {}
         saveData(); closeModal('modal-edit'); closeDetail(); showToast('卷宗及曲目已付之一炬');
     }
 
@@ -390,6 +391,7 @@
         document.getElementById('play-song-title').innerText = song.name;
         currentPlayingSongId = songId;
         currentPlayingPlId = playlistId;
+        savePlaybackState(0); // 新曲起播，进度存档归零（2026-10-13 #10b）
 
         document.getElementById('play-song-title').ondblclick = () => openSongEdit(playlistId, songId, 'player');
 
@@ -600,9 +602,62 @@
         }
     }
 
+    // ==========================================
+    // 8.5 播放进度记忆（2026-10-13 修复 #10b：退出再进，停在上次位置，不自动出声）
+    // ==========================================
+    let __lastProgressSave = 0;
+    function savePlaybackState(explicitTime) {
+        try {
+            const audioEl = document.getElementById('global-audio-player');
+            if (!currentPlayingPlId || !currentPlayingSongId || !audioEl || !audioEl.src) return;
+            const t = (typeof explicitTime === 'number') ? explicitTime : audioEl.currentTime;
+            if (!isFinite(t) || t < 0) return;
+            localStorage.setItem('jinyu_playback_state', JSON.stringify({
+                plId: currentPlayingPlId,
+                songId: currentPlayingSongId,
+                time: t,
+                savedAt: Date.now()
+            }));
+        } catch(e) {}
+    }
+    function clearPlaybackState() {
+        try { localStorage.removeItem('jinyu_playback_state'); } catch(e) {}
+    }
+    async function restorePlaybackState() {
+        let st = null;
+        try { st = JSON.parse(localStorage.getItem('jinyu_playback_state')); } catch(e) {}
+        if (!st || !st.plId || !st.songId) return;
+        const pl = appData.playlists.find(p => p.id === st.plId);
+        if (!pl) { clearPlaybackState(); return; }
+        const song = pl.songs.find(s => s.id === st.songId);
+        if (!song) { clearPlaybackState(); return; }
+        try {
+            const audioFile = await FileDB.get(song.id);
+            if (!audioFile) { clearPlaybackState(); return; }
+            const audioUrl = URL.createObjectURL(audioFile);
+            const audioEl = document.getElementById('global-audio-player');
+            audioEl.src = audioUrl;
+            audioEl.load();
+            currentPlayingPlId = st.plId;
+            currentPlayingSongId = st.songId;
+            document.getElementById('play-song-title').innerText = song.name;
+            document.getElementById('play-song-title').ondblclick = () => openSongEdit(st.plId, st.songId, 'player');
+            parseAndRenderLyrics(song.lrcText);
+            audioEl.oncanplay = () => {
+                audioEl.oncanplay = null;
+                try {
+                    if (st.time > 0 && isFinite(audioEl.duration) && st.time < audioEl.duration - 1) audioEl.currentTime = st.time;
+                } catch(e) {}
+            };
+            showToast('上次听到《' + song.name + '》' + formatTime(st.time) + '，点播放继续');
+        } catch(e) { clearPlaybackState(); }
+    }
+
     audioEl.addEventListener('timeupdate', () => {
         const currentTime = audioEl.currentTime;
         const duration = audioEl.duration;
+        const __now = Date.now();
+        if (__now - __lastProgressSave > 5000) { __lastProgressSave = __now; savePlaybackState(); }
         
         if (duration > 0 && isFinite(duration)) {
             const percent = (currentTime / duration) * 100;
@@ -622,6 +677,7 @@
         else highlightLineEN(activeIndex);
     });
         audioEl.addEventListener('ended', () => {
+        clearPlaybackState(); // 一曲播完旧进度作废；若自动接新曲，起播时会重新记录
         // 【核心修复】：歌曲播完，立刻检查“藕粉桂花”徽章
         if (currentLyrics.length > 0) { // 确保是有歌词的歌曲
              checkBadgeProgress('p6');
@@ -763,6 +819,7 @@
             audioEl.pause();
             isPlaying = false;
             setPlayingState(false);
+            savePlaybackState(); // 暂停时立刻记一次进度
 
             document.getElementById('btn-play').innerHTML = '▶';
         }
@@ -1076,10 +1133,7 @@ const defaultBadgeData = {
 };
 let badgeUserData = JSON.parse(localStorage.getItem('jinyu_badge_data')) || defaultBadgeData;
 if (!badgeUserData.equipped) badgeUserData.equipped = [];
-
-// 强制清空所有佩戴的徽章（重置荣誉墙）
-badgeUserData.equipped = [];
-saveBadgeData();
+// 【2026-10-13 修复 #10a】已删除此处「每次进页面强制清空荣誉墙并保存」的调试遗留代码，佩戴的徽章现在会正常保留。
 
 function saveBadgeData() {
     localStorage.setItem('jinyu_badge_data', JSON.stringify(badgeUserData));
@@ -2115,6 +2169,8 @@ async function applyFonts() {
         renderMainPlaylists();
         loadStats();
         checkBadgeProgress();
+        restorePlaybackState(); // 恢复上次播放进度：加载好、停在上次位置、等用户点播放
+        window.addEventListener('beforeunload', savePlaybackState); // 退出时再兜底记一次
 
                 // 初始化玉牌和笔山状态
         renderFontPresets();

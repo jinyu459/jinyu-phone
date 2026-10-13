@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>传书</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
   background: #fdfcf5;
   display: block;
@@ -850,7 +850,7 @@ function formatDate(ts) {
     return (d.getMonth()+1) + '月' + d.getDate() + '日';
 }
 
-function compressImage(file, maxSizeKB, callback) {
+function compressImage(file, maxSizeKB, callback, maxPx) {
     var reader = new FileReader();
     reader.onload = function(e) {
         var img = new Image();
@@ -859,7 +859,7 @@ function compressImage(file, maxSizeKB, callback) {
             var ctx = canvas.getContext('2d');
             var width = img.width;
             var height = img.height;
-            var maxSize = 300;
+            var maxSize = maxPx || 300; // 头像默认仍压到 300px；壁纸调用方传 1080（2026-10-13 修复 #9）
             if (width > maxSize || height > maxSize) {
                 var ratio = Math.min(maxSize / width, maxSize / height);
                 width = Math.round(width * ratio);
@@ -2319,7 +2319,7 @@ function bindEvents() {
             input.onchange = function(e) {
                 var file = e.target.files[0];
                 if (!file) return;
-                compressImage(file, 100, function(compressedData) {
+                compressImage(file, 400, function(compressedData) {
                     Store.chatWallpaper = compressedData;
                     const app = document.getElementById('app');
                     if (app) {
@@ -2333,7 +2333,7 @@ function bindEvents() {
                         showToast('壁纸保存失败，图片太大');
                     }
                     showToast('聊天壁纸已更新');
-                });
+                }, 1080);
             };
             input.click();
         });
